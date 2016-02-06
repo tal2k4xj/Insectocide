@@ -5,6 +5,33 @@
     android:background="@drawable/gamebackground"
     tools:context="insectocide.game.SinglePlayerGame">
 
+    <TextView
+        android:id="@+id/x"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:textColor="#FFFFFF"
+        android:textSize="35sp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true" />
+    <TextView
+        android:id="@+id/y"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:textColor="#FFFFFF"
+        android:textSize="35sp"
+        android:layout_below="@+id/x"
+        android:layout_alignParentStart="true" />
+    <TextView
+        android:id="@+id/z"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:textColor="#FFFFFF"
+        android:textSize="35sp"
+        android:layout_below="@+id/y"
+        android:layout_alignParentStart="true" />
 
     <ImageView
         android:layout_width="50dp"

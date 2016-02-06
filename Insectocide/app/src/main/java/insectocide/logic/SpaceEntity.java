@@ -12,7 +12,6 @@ public abstract class SpaceEntity extends ImageView {
     protected int fireSpeed;
     protected int health;
     protected int movementSpeed;
-    Coordinate centerLocation;
 
     public SpaceEntity(Context context) {
         super(context);

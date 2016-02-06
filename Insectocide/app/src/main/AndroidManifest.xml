@@ -26,7 +26,8 @@
         </activity>
         <activity
             android:name=".SinglePlayerGame"
-            android:screenOrientation="landscape">
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen">
         </activity>
     </application>
 

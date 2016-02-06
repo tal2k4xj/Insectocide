@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Game</string>
+    <string name="app_name">Insectocide</string>
     <string name="title_activity_main_menu">MainMenu</string>
 
     <string name="title_activity_single_player_menu">SinglePlayerMenu</string>
