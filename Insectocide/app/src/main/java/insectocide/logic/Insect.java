@@ -24,30 +24,35 @@ public class Insect extends SpaceEntity {
     public void move(String direction) {
 
     }
+
     private void setImageByType(){
-        String colot = type.getColor();
+        String color = type.getColor();
+
     }
 
     private void initPowersByType(){
-        this.health=2;
-        this.movementSpeed=2;
-        this.firePower=1;
-        this.fireSpeed=2;
-
+        setDefaults();
         switch (type){
             case SpeedyShoot:
                 this.fireSpeed=4;
                 break;
             case PowerShoot:
-                this.firePower =2;
+                this.firePower=2;
                 break;
             case ExtraHealth:
-                this.health =4;
+                this.health=4;
             case Normal:
                 break;
             case DoubleShoot:
                 break;
         }
+    }
+
+    private void setDefaults() {
+        this.health=2;
+        this.movementSpeed=2;
+        this.firePower=1;
+        this.fireSpeed=2;
     }
 
 }
