@@ -1,9 +1,9 @@
 package insectocide.game;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
 import android.os.Bundle;
 
-public class SinglePlayerMenu extends AppCompatActivity {
+public class SinglePlayerMenu extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
