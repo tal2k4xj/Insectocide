@@ -3,28 +3,21 @@
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/mainmenubackground"
-    tools:context="insectocide.game.MainMenu">
+    tools:context="insectocide.game.MultiplayerMenu">
 
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/singlePlayerButton"
-        android:background="@drawable/singleplayerbutton"
-        android:layout_above="@+id/MultiPlayerButton"
+        android:id="@+id/WifiButton"
+        android:background="@drawable/wifibutton"
+        android:layout_above="@+id/BluetoothButton"
         android:layout_centerHorizontal="true" />
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/MultiPlayerButton"
-        android:background="@drawable/multiplayerbutton"
+        android:id="@+id/BluetoothButton"
+        android:background="@drawable/bluetoothbutton"
         android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/SettingsButton"
-        android:background="@drawable/settingsbutton"
-        android:layout_below="@+id/MultiPlayerButton"
         android:layout_centerHorizontal="true" />
 
     <ImageView
@@ -34,4 +27,5 @@
         android:background="@drawable/logo"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true" />
+
 </RelativeLayout>
