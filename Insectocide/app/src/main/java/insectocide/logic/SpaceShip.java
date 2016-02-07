@@ -5,7 +5,7 @@ import android.view.View;
 
 public class SpaceShip extends SpaceEntity {
     private final int MAX_ENTITY = 6;
-    private final int MIN_ENTITY = 1;
+    private final int MIN_ENTITY = 2;
     private final int DEFAULT_HEALTH = 3;
     private String color;
     private static String lastMovement;
@@ -51,7 +51,7 @@ public class SpaceShip extends SpaceEntity {
             case "right3":
                 setX(getX()+ (movementSpeed*3));
                 break;
-        }
+            }
         lastMovement=direction;
     }
 }
