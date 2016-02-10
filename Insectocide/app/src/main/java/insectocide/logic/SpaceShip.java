@@ -1,16 +1,23 @@
 package insectocide.logic;
 
 import android.content.Context;
+import android.util.DisplayMetrics;
 import android.view.View;
+import android.view.ViewGroup;
 
 public class SpaceShip extends SpaceEntity {
     private final int MAX_ENTITY = 6;
     private final int MIN_ENTITY = 2;
     private final int DEFAULT_HEALTH = 3;
+    private double y;
+    private double x;
+    private double width;
+    private double height;
     private String color;
     private static String lastMovement;
+    private DisplayMetrics metrics;
 
-    public SpaceShip(String color, Context context) {
+    public SpaceShip(String color, Context context , DisplayMetrics metrics) {
         super(context);
         this.firePower = MIN_ENTITY;
         this.fireSpeed = MIN_ENTITY;
@@ -21,11 +28,26 @@ public class SpaceShip extends SpaceEntity {
         setVisibility(View.VISIBLE);
         setY(0);
         setImage(color + lastMovement);
+        this.metrics = metrics;
+        setPositionAndDimensions();
     }
 
     private void setImage(String imageName) {
         int drawableId = getResources().getIdentifier(imageName, "drawable", "insectocide.game");
         this.setBackgroundResource(drawableId);
+    }
+
+    public void setPositionAndDimensions(){
+        this.width = this.metrics.heightPixels*0.2/1.5;
+        this.height = this.metrics.heightPixels*0.2;
+        this.setLayoutParams(new ViewGroup.LayoutParams((int) width, (int) height));
+        this.x = this.metrics.widthPixels/2 - this.metrics.heightPixels*0.2/1.5/2;
+        if (color == "red")
+            this.y = this.metrics.heightPixels - this.metrics.heightPixels*0.2;
+        else if (color == "blue")
+            this.y = 0;
+        this.setY((float)y);
+        this.setX((float)x);
     }
 
     @Override
@@ -40,16 +62,20 @@ public class SpaceShip extends SpaceEntity {
         }
         switch (direction) {
             case "left2":
-                setX(getX()- (movementSpeed*2));
+                if (getX() > 0)
+                    setX(getX()- (movementSpeed*2));
                 break;
             case "left3":
-                setX(getX()- (movementSpeed*3));
+                if (getX() > 0)
+                    setX(getX()- (movementSpeed*3));
                 break;
             case "right2":
-                setX(getX()+ (movementSpeed*2));
+                if (getX() < this.metrics.widthPixels-this.width)
+                    setX(getX()+ (movementSpeed*2));
                 break;
             case "right3":
-                setX(getX()+ (movementSpeed*3));
+                if (getX() < this.metrics.widthPixels-this.width)
+                    setX(getX()+ (movementSpeed*3));
                 break;
             }
         lastMovement=direction;

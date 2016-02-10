@@ -51,15 +51,8 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         //add ship + placement + adjust size
 
         RelativeLayout rl = (RelativeLayout)findViewById(R.id.singlePlayerLayout);
-        ship = new SpaceShip(DEFAULT_COLOR, this);
+        ship = new SpaceShip(DEFAULT_COLOR, this , metrics);
         ship.bringToFront();
-        double shipw = metrics.heightPixels*0.2/1.5;
-        double shiph = metrics.heightPixels*0.2;
-        ship.setLayoutParams(new LayoutParams((int) shipw, (int) shiph));
-        double maxY = metrics.heightPixels - metrics.heightPixels*0.2;
-        double maxX = metrics.widthPixels/2 - metrics.heightPixels*0.2/1.5/2;
-        ship.setY((float)maxY);
-        ship.setX((float)maxX);
         rl.addView(ship);
 
         initAccelerometer();
