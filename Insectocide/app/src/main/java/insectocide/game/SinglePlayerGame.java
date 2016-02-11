@@ -12,27 +12,25 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.view.ViewGroup.LayoutParams;
 
+import java.util.Random;
+
+import insectocide.logic.Insect;
+import insectocide.logic.InsectType;
 import insectocide.logic.SpaceShip;
 
 public class SinglePlayerGame extends Activity implements SensorEventListener {
     private final String DEFAULT_COLOR = "red";
     private Sensor accelerometer;
     private SensorManager sm;
-    private ImageView blueInsect;
-    private AnimationDrawable blueInsectAnimation;
     private SpaceShip ship;
     private DisplayMetrics metrics;
+    private Insect insects[][];
+    private AnimationDrawable insectAnimations[][];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single_player_game);
-
-        //add insect + animation
-        blueInsect = (ImageView) findViewById(R.id.blueInsect);
-        blueInsect.setBackgroundResource(R.drawable.blue_animation);
-        blueInsectAnimation = (AnimationDrawable) blueInsect.getBackground();
-        blueInsectAnimation.start();
 
         metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
@@ -48,14 +46,51 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
 
         //int maxX = mdispSize.x;
 
-        //add ship + placement + adjust size
+        //add ship add insect + placement + adjust size
 
         RelativeLayout rl = (RelativeLayout)findViewById(R.id.singlePlayerLayout);
+
+        initShip(rl);
+        initInsects(rl);
+
+        initAccelerometer();
+    }
+
+    private void initShip(RelativeLayout rl){
         ship = new SpaceShip(DEFAULT_COLOR, this , metrics);
         ship.bringToFront();
         rl.addView(ship);
+    }
 
-        initAccelerometer();
+    private void initInsects(RelativeLayout rl){
+        insects = new Insect[10][3];
+        insectAnimations = new AnimationDrawable[10][3];
+        for (int i=0 ; i < 10 ; i++){
+            for(int j=0 ; j < 3 ; j++){
+                insects[i][j] = new Insect(pickRandomType(),this,this.metrics);
+                insects[i][j].setPositionAndDimensions(i,j);
+                insectAnimations[i][j] = (AnimationDrawable) insects[i][j].getBackground();
+                insectAnimations[i][j].start();
+                insects[i][j].bringToFront();
+                rl.addView(insects[i][j]);
+            }
+        }
+    }
+
+    public InsectType pickRandomType(){
+        Random rand = new Random();
+        int n = rand.nextInt(5);
+        switch (n){
+            case 0:
+                return InsectType.SpeedyShoot;
+            case 1:
+                return InsectType.PowerShoot;
+            case 2:
+                return InsectType.ExtraHealth;
+            case 3:
+                return InsectType.DoubleShoot;
+        }
+        return InsectType.Normal;
     }
 
     private void initAccelerometer() {

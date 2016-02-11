@@ -13,9 +13,10 @@ public class SpaceShip extends SpaceEntity {
     private double x;
     private double width;
     private double height;
+    private DisplayMetrics metrics;
     private String color;
     private static String lastMovement;
-    private DisplayMetrics metrics;
+
 
     public SpaceShip(String color, Context context , DisplayMetrics metrics) {
         super(context);
@@ -26,7 +27,6 @@ public class SpaceShip extends SpaceEntity {
         this.color = color;
         lastMovement = "middle";
         setVisibility(View.VISIBLE);
-        setY(0);
         setImage(color + lastMovement);
         this.metrics = metrics;
         setPositionAndDimensions();
