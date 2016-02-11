@@ -7,10 +7,9 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.DisplayMetrics;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.view.ViewGroup.LayoutParams;
 
 import java.util.Random;
 
@@ -20,12 +19,15 @@ import insectocide.logic.SpaceShip;
 
 public class SinglePlayerGame extends Activity implements SensorEventListener {
     private final String DEFAULT_COLOR = "red";
+    private final int INSECTS_ROWS = 3;
+    private final int INSECTS_COLS = 10;
     private Sensor accelerometer;
     private SensorManager sm;
     private SpaceShip ship;
     private DisplayMetrics metrics;
     private Insect insects[][];
     private AnimationDrawable insectAnimations[][];
+    private Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,17 +37,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-        //get maxX and maxY that are the max value of the screen. the min is 0.
-        //link: http://stackoverflow.com/questions/11483345/how-do-android-screen-coordinates-work
-
-        /* i think we dont need this part
-        Display mdisp = getWindowManager().getDefaultDisplay();
-        Point mdispSize = new Point();
-        mdisp.getSize(mdispSize);
-        */
-
-        //int maxX = mdispSize.x;
-
         //add ship add insect + placement + adjust size
 
         RelativeLayout rl = (RelativeLayout)findViewById(R.id.singlePlayerLayout);
@@ -53,20 +44,32 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         initShip(rl);
         initInsects(rl);
 
-        initAccelerometer();
+        //delay the sensors for the start animations
+
+        handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                initAccelerometer();
+                ;
+            }
+        }, 7000);
+
     }
 
     private void initShip(RelativeLayout rl){
         ship = new SpaceShip(DEFAULT_COLOR, this , metrics);
+        ship.setBackgroundResource(R.drawable.red_ship_animation);
+        AnimationDrawable redShipAnimation = (AnimationDrawable) ship.getBackground();
+        redShipAnimation.start();
         ship.bringToFront();
         rl.addView(ship);
     }
 
     private void initInsects(RelativeLayout rl){
-        insects = new Insect[10][3];
-        insectAnimations = new AnimationDrawable[10][3];
-        for (int i=0 ; i < 10 ; i++){
-            for(int j=0 ; j < 3 ; j++){
+        insects = new Insect[INSECTS_COLS][INSECTS_ROWS];
+        insectAnimations = new AnimationDrawable[INSECTS_COLS][INSECTS_ROWS];
+        for (int i=0 ; i < INSECTS_COLS ; i++){
+            for(int j=0 ; j < INSECTS_ROWS ; j++){
                 insects[i][j] = new Insect(pickRandomType(),this,this.metrics);
                 insects[i][j].setPositionAndDimensions(i,j);
                 insectAnimations[i][j] = (AnimationDrawable) insects[i][j].getBackground();

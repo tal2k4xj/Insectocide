@@ -1,6 +1,7 @@
 package insectocide.logic;
 
 import android.content.Context;
+import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,13 +42,21 @@ public class SpaceShip extends SpaceEntity {
         this.width = this.metrics.heightPixels*0.2/1.5;
         this.height = this.metrics.heightPixels*0.2;
         this.setLayoutParams(new ViewGroup.LayoutParams((int) width, (int) height));
-        this.x = this.metrics.widthPixels/2 - this.metrics.heightPixels*0.2/1.5/2;
-        if (color == "red")
-            this.y = this.metrics.heightPixels - this.metrics.heightPixels*0.2;
-        else if (color == "blue")
-            this.y = 0;
-        this.setY((float)y);
-        this.setX((float)x);
+        this.x = this.metrics.widthPixels / 2 - this.metrics.heightPixels * 0.2 / 1.5 / 2;
+        this.setX((float) x);
+        if (color == "red") {
+            this.y = this.metrics.heightPixels;
+            this.setY((float) y);
+            animate().y((float) (getY() - this.metrics.heightPixels * 0.2));
+        }
+        else if (color == "blue") {
+            this.y = 0 - this.height;
+            this.setY((float) y);
+            animate().y((float) (getY() + this.metrics.heightPixels * 0.2));
+
+        }
+        animate().setDuration(7000);
+        animate().start();
     }
 
     @Override
