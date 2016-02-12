@@ -1,6 +1,7 @@
 package insectocide.logic;
 
 import android.content.Context;
+import android.graphics.drawable.AnimationDrawable;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,11 +15,8 @@ public class Insect extends SpaceEntity {
 
     private final int MAX_INSECTS = 10;
     protected InsectType type;
-    private double y;
-    private double x;
-    private double width;
-    private double height;
     private DisplayMetrics metrics;
+    protected AnimationDrawable animation;
 
     public Insect(InsectType type ,Context context,DisplayMetrics metrics) {
         super(context);
@@ -27,6 +25,8 @@ public class Insect extends SpaceEntity {
         initPowersByType();
         setVisibility(View.VISIBLE);
         this.metrics = metrics;
+        animation = (AnimationDrawable)this.getBackground();
+        animation.start();
     }
 
     @Override
@@ -40,24 +40,8 @@ public class Insect extends SpaceEntity {
     }
 
     private void setImageByType(){
-        switch (type){
-            case SpeedyShoot:
-                setBackgroundResource(R.drawable.pink_animation);
-                break;
-            case PowerShoot:
-                setBackgroundResource(R.drawable.orange_animation);
-                break;
-            case ExtraHealth:
-                setBackgroundResource(R.drawable.blue_animation);
-                break;
-            case Normal:
-                setBackgroundResource(R.drawable.brown_animation);
-                break;
-            case DoubleShoot:
-                setBackgroundResource(R.drawable.green_animation);
-                break;
-        }
-
+        int drawableId = getResources().getIdentifier(type.getColor()+"_animation", "drawable", "insectocide.game");
+        this.setBackgroundResource(drawableId);
     }
 
     public void setPositionAndDimensions(int i , int j){
@@ -97,5 +81,4 @@ public class Insect extends SpaceEntity {
         this.firePower=1;
         this.fireSpeed=2;
     }
-
 }

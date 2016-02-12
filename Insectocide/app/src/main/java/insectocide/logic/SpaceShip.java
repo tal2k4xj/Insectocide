@@ -1,23 +1,21 @@
 package insectocide.logic;
 
 import android.content.Context;
+import android.graphics.drawable.AnimationDrawable;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
 
+import insectocide.game.R;
+
 public class SpaceShip extends SpaceEntity {
     private final int MAX_ENTITY = 6;
     private final int MIN_ENTITY = 2;
     private final int DEFAULT_HEALTH = 3;
-    private double y;
-    private double x;
-    private double width;
-    private double height;
     private DisplayMetrics metrics;
-    private String color;
     private static String lastMovement;
-
+    private AnimationDrawable animation;
 
     public SpaceShip(String color, Context context , DisplayMetrics metrics) {
         super(context);
@@ -28,7 +26,10 @@ public class SpaceShip extends SpaceEntity {
         this.color = color;
         lastMovement = "middle";
         setVisibility(View.VISIBLE);
-        setImage(color + lastMovement);
+        int startAnimationId = getResources().getIdentifier(color.toLowerCase()+"_ship_animation", "drawable", "insectocide.game");
+        setBackgroundResource(startAnimationId);
+        animation = (AnimationDrawable) this.getBackground();
+        animation.start();
         this.metrics = metrics;
         setPositionAndDimensions();
     }
@@ -62,6 +63,10 @@ public class SpaceShip extends SpaceEntity {
     @Override
     public void fire() {
 
+    }
+
+    public String getColor (){
+        return this.color;
     }
 
     @Override
