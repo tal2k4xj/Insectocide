@@ -61,8 +61,8 @@ public class Insect extends SpaceEntity {
     }
 
     public void setPositionAndDimensions(int i , int j){
-        this.width = this.metrics.heightPixels*0.07*1.3;
-        this.height = this.metrics.heightPixels*0.07;
+        this.width = this.metrics.heightPixels*0.09*1.3;
+        this.height = this.metrics.heightPixels*0.09;
         this.setLayoutParams(new ViewGroup.LayoutParams((int) width, (int) height));
         this.x = this.metrics.widthPixels + (this.metrics.widthPixels - (MAX_INSECTS*width + (MAX_INSECTS-1)*this.metrics.widthPixels*0.02))/2 + (i*width) + (i*this.metrics.widthPixels*0.02);
         this.y = this.metrics.heightPixels*0.35 + j*height;
