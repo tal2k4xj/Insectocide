@@ -15,23 +15,15 @@ public class Insect extends SpaceEntity {
 
     private final int MAX_INSECTS = 10;
     protected InsectType type;
-    private DisplayMetrics metrics;
-    protected AnimationDrawable animation;
 
     public Insect(InsectType type ,Context context,DisplayMetrics metrics) {
-        super(context);
+        super(context,metrics);
         this.type = type;
         setImageByType();
         initPowersByType();
         setVisibility(View.VISIBLE);
-        this.metrics = metrics;
         animation = (AnimationDrawable)this.getBackground();
         animation.start();
-    }
-
-    @Override
-    public void fire() {
-
     }
 
     @Override

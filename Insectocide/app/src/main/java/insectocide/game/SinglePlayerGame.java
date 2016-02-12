@@ -1,5 +1,6 @@
 package insectocide.game;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.graphics.drawable.AnimationDrawable;
 import android.hardware.Sensor;
@@ -9,37 +10,47 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
+import android.view.MotionEvent;
 import android.widget.RelativeLayout;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import insectocide.logic.Insect;
 import insectocide.logic.InsectType;
+import insectocide.logic.Shot;
 import insectocide.logic.SpaceShip;
 
 public class SinglePlayerGame extends Activity implements SensorEventListener {
     private final String DEFAULT_COLOR = "red";
     private final int INSECTS_ROWS = 3;
     private final int INSECTS_COLS = 10;
+    private final long SHOOT_DELAY = 500;
     private Sensor accelerometer;
     private SensorManager sm;
     private SpaceShip ship;
     private DisplayMetrics metrics;
     private Insect insects[][];
     private Handler handler;
+    private List<Shot> shoots;
+    private RelativeLayout rl;
+    private long lastShootTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single_player_game);
-
+        shoots = new ArrayList<>();
         metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        rl = (RelativeLayout)findViewById(R.id.singlePlayerLayout);
 
-        RelativeLayout rl = (RelativeLayout)findViewById(R.id.singlePlayerLayout);
-
-        initShip(rl);
-        initInsects(rl);
+        initShip();
+        initInsects();
 
         //delay the sensors for the start animations
+
+        lastShootTime = 7000;
 
         handler = new Handler();
         handler.postDelayed(new Runnable() {
@@ -51,13 +62,34 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
 
     }
 
-    private void initShip(RelativeLayout rl){
+    @Override
+    protected void onStart(){
+        super.onStart();
+        Thread checkShots = new Thread(new Runnable() {
+            public void run() {
+                while (true) {
+                    try {
+                        for (Shot s : shoots) {
+                            s.shoot();
+                        }
+
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        checkShots.start();
+    }
+
+    private void initShip(){
         ship = new SpaceShip(DEFAULT_COLOR, this , metrics);
         ship.bringToFront();
         rl.addView(ship);
     }
 
-    private void initInsects(RelativeLayout rl){
+    private void initInsects(){
         insects = new Insect[INSECTS_COLS][INSECTS_ROWS];
         for (int i=0 ; i < INSECTS_COLS ; i++){
             for(int j=0 ; j < INSECTS_ROWS ; j++){
@@ -108,5 +140,17 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
+    }
+
+    public boolean onTouchEvent(MotionEvent event) {
+        long time = event.getDownTime();
+        if(time-lastShootTime > SHOOT_DELAY ) {
+            Shot s = ship.fire();
+            shoots.add(s);
+            s.bringToFront();
+            rl.addView(s);
+            lastShootTime = time;
+        }
+        return false;
     }
 }

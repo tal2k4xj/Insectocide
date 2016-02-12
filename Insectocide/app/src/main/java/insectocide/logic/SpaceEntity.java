@@ -1,6 +1,7 @@
 package insectocide.logic;
 
 import android.content.Context;
+import android.graphics.drawable.AnimationDrawable;
 import android.media.Image;
 import android.util.DisplayMetrics;
 import android.widget.ImageView;
@@ -19,15 +20,17 @@ public abstract class SpaceEntity extends ImageView {
     protected double width;
     protected double height;
     protected String color;
-    private DisplayMetrics metrics;
+    protected DisplayMetrics metrics;
+    protected AnimationDrawable animation;
 
-    public SpaceEntity(Context context) {
+    public SpaceEntity(Context context , DisplayMetrics metrics) {
         super(context);
+        this.metrics = metrics;
     }
 
-    public void fire(){
-        shot = new Shot(firePower,fireSpeed,this);
-        shot.activate();
+    public Shot fire(){
+        shot = new Shot(this.getContext(),this,metrics);
+        return shot;
     }
 
     public String getColor (){
@@ -35,4 +38,20 @@ public abstract class SpaceEntity extends ImageView {
     }
 
     public abstract void move(String direction);
+
+    public int getFirePower() {
+        return firePower;
+    }
+
+    public void setFirePower(int firePower) {
+        this.firePower = firePower;
+    }
+
+    public int getFireSpeed() {
+        return fireSpeed;
+    }
+
+    public void setFireSpeed(int fireSpeed) {
+        this.fireSpeed = fireSpeed;
+    }
 }

@@ -13,12 +13,10 @@ public class SpaceShip extends SpaceEntity {
     private final int MAX_ENTITY = 6;
     private final int MIN_ENTITY = 2;
     private final int DEFAULT_HEALTH = 3;
-    private DisplayMetrics metrics;
     private static String lastMovement;
-    private AnimationDrawable animation;
 
     public SpaceShip(String color, Context context , DisplayMetrics metrics) {
-        super(context);
+        super(context,metrics);
         this.firePower = MIN_ENTITY;
         this.fireSpeed = MIN_ENTITY;
         this.health = DEFAULT_HEALTH;
@@ -30,7 +28,6 @@ public class SpaceShip extends SpaceEntity {
         setBackgroundResource(startAnimationId);
         animation = (AnimationDrawable) this.getBackground();
         animation.start();
-        this.metrics = metrics;
         setPositionAndDimensions();
     }
 
@@ -40,29 +37,24 @@ public class SpaceShip extends SpaceEntity {
     }
 
     public void setPositionAndDimensions(){
-        this.width = this.metrics.heightPixels*0.2/1.5;
-        this.height = this.metrics.heightPixels*0.2;
+        this.width = metrics.heightPixels*0.2/1.5;
+        this.height = metrics.heightPixels*0.2;
         this.setLayoutParams(new ViewGroup.LayoutParams((int) width, (int) height));
-        this.x = this.metrics.widthPixels / 2 - this.metrics.heightPixels * 0.2 / 1.5 / 2;
+        this.x = metrics.widthPixels / 2 - metrics.heightPixels * 0.2 / 1.5 / 2;
         this.setX((float) x);
         if (color == "red") {
-            this.y = this.metrics.heightPixels;
+            this.y = metrics.heightPixels;
             this.setY((float) y);
-            animate().y((float) (getY() - this.metrics.heightPixels * 0.2));
+            animate().y((float) (getY() - metrics.heightPixels * 0.2));
         }
         else if (color == "blue") {
             this.y = 0 - this.height;
             this.setY((float) y);
-            animate().y((float) (getY() + this.metrics.heightPixels * 0.2));
+            animate().y((float) (getY() + metrics.heightPixels * 0.2));
 
         }
         animate().setDuration(7000);
         animate().start();
-    }
-
-    @Override
-    public void fire() {
-
     }
 
     public String getColor (){
@@ -84,11 +76,11 @@ public class SpaceShip extends SpaceEntity {
                     setX(getX()- (movementSpeed*3));
                 break;
             case "right2":
-                if (getX() < this.metrics.widthPixels-this.width)
+                if (getX() < metrics.widthPixels-this.width)
                     setX(getX()+ (movementSpeed*2));
                 break;
             case "right3":
-                if (getX() < this.metrics.widthPixels-this.width)
+                if (getX() < metrics.widthPixels-this.width)
                     setX(getX()+ (movementSpeed*3));
                 break;
             }
