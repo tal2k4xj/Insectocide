@@ -1,6 +1,8 @@
 package insectocide.logic;
 
 import android.content.Context;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.AnimationDrawable;
 import android.util.DisplayMetrics;
 import android.widget.ImageView;
@@ -35,7 +37,7 @@ public abstract class SpaceEntity extends ImageView {
     }
 
     public boolean isDead(){
-        if (health == 0){
+        if (health <= 0){
             return true;
         }
         return false;
@@ -61,5 +63,9 @@ public abstract class SpaceEntity extends ImageView {
 
     public void setFireSpeed(int fireSpeed) {
         this.fireSpeed = fireSpeed;
+    }
+    public RectF getRect(){
+        RectF r = new RectF(getX(),getY(),(float)(getX()+width),(float)(getY()+height));
+        return r;
     }
 }

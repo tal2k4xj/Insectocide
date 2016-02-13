@@ -1,6 +1,7 @@
 package insectocide.game;
 
 import android.app.Activity;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -13,6 +14,7 @@ import android.view.MotionEvent;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import insectocide.logic.Insect;
@@ -31,8 +33,9 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     private SpaceShip spaceShip;
     private DisplayMetrics metrics;
     private Insect insects[][];
-    private Handler accelerometerHandler;
-    private List<Shot> shoots;
+    private Handler handler;
+    private List<Shot> shipShoots;
+    private List<Shot> insectsShoots;
     private RelativeLayout rl;
     private long lastShootTime = 0;
     private boolean isActivityPaused = false;
@@ -45,26 +48,25 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single_player_game);
-        shoots = new ArrayList<>();
+        shipShoots = Collections.synchronizedList(new ArrayList<Shot>());
+        insectsShoots = Collections.synchronizedList(new ArrayList<Shot>());
         metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         rl = (RelativeLayout)findViewById(R.id.singlePlayerLayout);
 
         initShip();
         initInsects();
-
-        initAccelerometerWithDelay();
+        initHandler();
     }
 
-    private void initAccelerometerWithDelay() {
-        accelerometerHandler = new Handler();
-        accelerometerHandler.postDelayed(new Runnable() {
+    private void initHandler() {
+        handler = new Handler();
+        handler.postDelayed(new Runnable() {
             public void run() {
                 isStartAnimationDone = true;
                 initAccelerometer();
                 initMoveShotsThread();
                 startInsectsShotsThread();
-                checkIfShotHit();
                 ;
             }
         }, START_ANIMATION_DELAY);
@@ -78,7 +80,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
             initAccelerometer();
             initMoveShotsThread();
             startInsectsShotsThread();
-            checkIfShotHit();
         }
 
     }
@@ -130,7 +131,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                                 int j = rand.nextInt(INSECTS_ROWS);
                                 if(insects[i][j] != null) {
                                     Shot s = insects[i][j].fire();
-                                    shoots.add(s);
+                                    insectsShoots.add(s);
                                     s.bringToFront();
                                     rl.addView(s);
                                 }
@@ -154,13 +155,20 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                for (Shot s : shoots) {
+                                for (Shot s : insectsShoots) {
                                     if(!s.isOutOfScreen()) {
                                         s.shoot();
+                                        checkIfShipHit(s);
                                     }else{
-                                        s.destrtoy();
-                                        rl.removeView(s);
-                                        shoots.remove(s);
+                                        removeShot(s);
+                                    }
+                                }
+                                for (Shot s : shipShoots) {
+                                    if(!s.isOutOfScreen()) {
+                                        s.shoot();
+                                        checkIfInsectHit(s);
+                                    }else{
+                                        removeShot(s);
                                     }
                                 }
                             }
@@ -174,59 +182,67 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         });
         moveShots.start();
     }
+//
+//    private void checkIfShotHit() {
+//        checkHitShots = new Thread(new Runnable() {
+//            public void run() {
+//                try{
+//                    while (!isActivityPaused) {
+//                       for (Shot s : shipShoots) {
+//
+//                        }
+//                        for (Shot s : insectsShoots) {
+//
+//                        }
+//                    }
+//                    Thread.sleep(50);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
+//        checkHitShots.start();
+//    }
 
-    private void checkIfShotHit() {
-        checkHitShots = new Thread(new Runnable() {
-            public void run() {
-                try{
-                    while (!isActivityPaused) {
-                       for (Shot s : shoots) {
-                           RectF r1 = new RectF(s.getLeft(),s.getTop(),s.getRight(),s.getBottom());
-                           if(s.getEntity() instanceof SpaceShip){
-                               checkIfInsectHit(r1,s);
-                            }else if (s.getEntity() instanceof Insect){
-                               checkIfShipHit(r1,s);
-                            }
-                        }
-                    }
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        checkHitShots.start();
-    }
-
-    private void checkIfInsectHit(RectF r1,Shot s){
+    private void checkIfInsectHit(Shot s){
+        RectF r1 = s.getRect();
         for (int i=0; i<INSECTS_COLS ; i++){
             for (int j=0; j<INSECTS_ROWS ; j++){
                 if(insects[i][j]!=null) {
-                    RectF r2 = new RectF(insects[i][j].getLeft(),insects[i][j].getTop(),insects[i][j].getRight(),insects[i][j].getBottom());
+                    RectF r2 = insects[i][j].getRect();
                     if (r1.intersect(r2)) {
                         insects[i][j].gotHit(s.getPower());
                         if (insects[i][j].isDead()) {
                             removeView(insects[i][j]);
                             insects[i][j] = null;
                         }
-                        removeView(s);
-                        shoots.remove(s);
+                        removeShot(s);
                     }
                 }
             }
         }
     }
 
-    private void checkIfShipHit(RectF r1,Shot s){
-        RectF r2 = new RectF(spaceShip.getLeft(), spaceShip.getTop(), spaceShip.getRight(), spaceShip.getBottom());
+    private void checkIfShipHit(Shot s){
+        RectF r1 = s.getRect();
+        RectF r2 = spaceShip.getRect();
         if (r1.intersect(r2)){
             spaceShip.gotHit(s.getPower());
             if(spaceShip.isDead()){
                 removeView(spaceShip);
             }
-            removeView(s);
-            shoots.remove(s);
+            removeShot(s);
         } // need to add blue ship for multiplayer
+    }
+
+    private void removeShot(Shot s) {
+        removeView(s);
+        s.destroy();
+        if (s.getEntity() instanceof SpaceShip){
+            shipShoots.remove(s);
+        }else
+            insectsShoots.remove(s);
+
     }
 
     private void removeView(final ImageView v){
@@ -273,7 +289,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         long time = event.getDownTime();
         if(time-lastShootTime > SHOOT_DELAY && isStartAnimationDone) {
             Shot s = spaceShip.fire();
-            shoots.add(s);
+            shipShoots.add(s);
             s.bringToFront();
             rl.addView(s);
             lastShootTime = time;

@@ -1,6 +1,8 @@
 package insectocide.logic;
 
 import android.content.Context;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.AnimationDrawable;
 import android.util.DisplayMetrics;
 import android.view.ViewGroup;
@@ -111,8 +113,12 @@ public class Shot extends ImageView {
         return entity;
     }
 
-    public void destrtoy(){
+    public void destroy(){
         animation.stop();
         setVisibility(INVISIBLE);
+    }
+    public RectF getRect(){
+        RectF r = new RectF(getX(),getY(),(float)(getX()+width),(float)(getY()+height));
+        return r;
     }
 }

@@ -1,6 +1,7 @@
 package insectocide.logic;
 
 import android.content.Context;
+import android.graphics.RectF;
 import android.graphics.drawable.AnimationDrawable;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -35,13 +36,13 @@ public class Insect extends SpaceEntity {
     }
 
     public void setPositionAndDimensions(int i , int j){
-        this.width = this.metrics.heightPixels*0.09*1.3;
-        this.height = this.metrics.heightPixels*0.09;
-        this.setLayoutParams(new ViewGroup.LayoutParams((int) width, (int) height));
-        this.x = this.metrics.widthPixels + (this.metrics.widthPixels - (MAX_INSECTS*width + (MAX_INSECTS-1)*this.metrics.widthPixels*0.02))/2 + (i*width) + (i*this.metrics.widthPixels*0.02);
-        this.y = this.metrics.heightPixels*0.35 + j*height;
-        this.setY((float)y);
-        this.setX((float)x);
+        width = metrics.heightPixels*0.09*1.3;
+        height = metrics.heightPixels*0.09;
+        setLayoutParams(new ViewGroup.LayoutParams((int) width, (int) height));
+        x = metrics.widthPixels + (metrics.widthPixels - (MAX_INSECTS*width + (MAX_INSECTS-1)*metrics.widthPixels*0.02))/2 + (i*width) + (i*metrics.widthPixels*0.02);
+        y = metrics.heightPixels*0.35 + j*height;
+        setY((float)y);
+        setX((float)x);
         animate().x(getX() - this.metrics.widthPixels);
         animate().setDuration(7000);
         animate().start();
@@ -66,10 +67,10 @@ public class Insect extends SpaceEntity {
     }
 
     private void setDefaults() {
-        this.health=2;
-        this.movementSpeed=2;
-        this.firePower=1;
-        this.fireSpeed=2;
+        health=2;
+        movementSpeed=2;
+        firePower=1;
+        fireSpeed=2;
     }
 
     public String getShootDirection() {

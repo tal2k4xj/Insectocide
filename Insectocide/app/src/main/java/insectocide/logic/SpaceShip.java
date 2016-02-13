@@ -1,6 +1,7 @@
 package insectocide.logic;
 
 import android.content.Context;
+import android.graphics.RectF;
 import android.graphics.drawable.AnimationDrawable;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -10,9 +11,9 @@ public class SpaceShip extends SpaceEntity {
     private static String lastMovement;
 
     public SpaceShip(String color, Context context , DisplayMetrics metrics) {
-        super(context,metrics);
-        setDefaults();
+        super(context, metrics);
         this.color = color;
+        setDefaults();
         lastMovement = "middle";
         setVisibility(View.VISIBLE);
         int startAnimationId = getResources().getIdentifier(color.toLowerCase()+"_ship_animation", "drawable", "insectocide.game");
@@ -28,19 +29,19 @@ public class SpaceShip extends SpaceEntity {
     }
 
     public void setPositionAndDimensions(){
-        this.width = metrics.heightPixels*0.2/1.5;
-        this.height = metrics.heightPixels*0.2;
-        this.setLayoutParams(new ViewGroup.LayoutParams((int) width, (int) height));
-        this.x = metrics.widthPixels / 2 - metrics.heightPixels * 0.2 / 1.5 / 2;
-        this.setX((float) x);
+        width = metrics.heightPixels*0.2/1.5;
+        height = metrics.heightPixels*0.2;
+        setLayoutParams(new ViewGroup.LayoutParams((int) width, (int) height));
+        x = metrics.widthPixels / 2 - metrics.heightPixels * 0.2 / 1.5 / 2;
+        setX((float) x);
         if (color == "red") {
-            this.y = metrics.heightPixels;
-            this.setY((float) y);
+            y = metrics.heightPixels;
+            setY((float) y);
             animate().y((float) (getY() - metrics.heightPixels * 0.2));
         }
         else if (color == "blue") {
-            this.y = 0 - this.height;
-            this.setY((float) y);
+            y = 0 - height;
+            setY((float) y);
             animate().y((float) (getY() + metrics.heightPixels * 0.2));
 
         }
@@ -79,9 +80,9 @@ public class SpaceShip extends SpaceEntity {
     }
 
     private void setDefaults() {
-        this.health=3;
-        this.movementSpeed=2;
-        this.firePower=1;
-        this.fireSpeed=2;
+        health=3;
+        movementSpeed=2;
+        firePower=1;
+        fireSpeed=2;
     }
 }
