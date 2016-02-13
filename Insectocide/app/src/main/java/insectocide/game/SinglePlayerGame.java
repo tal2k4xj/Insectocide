@@ -24,12 +24,13 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     private final int INSECTS_ROWS = 3;
     private final int INSECTS_COLS = 10;
     private final long SHOOT_DELAY = 1000;
+    private final long START_ANIMATION_DELAY = 8000;
     private Sensor accelerometer;
     private SensorManager sm;
     private SpaceShip ship;
     private DisplayMetrics metrics;
     private Insect insects[][];
-    private Handler handler;
+    private Handler accelerometerHandler;
     private List<Shot> shoots;
     private RelativeLayout rl;
     private long lastShootTime = 0;
@@ -50,8 +51,12 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         initShip();
         initInsects();
 
-        handler = new Handler();
-        handler.postDelayed(new Runnable() {
+        initAccelerometerWithDelay();
+    }
+
+    private void initAccelerometerWithDelay() {
+        accelerometerHandler = new Handler();
+        accelerometerHandler.postDelayed(new Runnable() {
             public void run() {
                 isStartAnimationDone = true;
                 initAccelerometer();
@@ -59,7 +64,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                 startInsectsShots();
                 ;
             }
-        }, 7000);
+        }, START_ANIMATION_DELAY);
     }
 
     @Override
@@ -125,7 +130,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                                 rl.addView(s);
                             }
                         });
-                        Thread.sleep(5000);
+                        Thread.sleep(2000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -147,7 +152,9 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                                     if(!s.isOutOfScreen()) {
                                         s.shoot();
                                     }else{
+                                        s.destrtoy();
                                         rl.removeView(s);
+                                        shoots.remove(s);
                                     }
                                 }
                             }
@@ -169,14 +176,14 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     }
 
     private void moveShip(float curMovement) {
-        if (curMovement >0.5) {
-            if(curMovement>1.5){
+        if (curMovement >1) {
+            if(curMovement>2.5){
                 ship.move("right3");
             }else {
                 ship.move("right2");
             }
-        }else if(curMovement<-0.5){
-            if(curMovement<-1.5){
+        }else if(curMovement<-1){
+            if(curMovement<-2.5){
                 ship.move("left3");
             }else {
                 ship.move("left2");
