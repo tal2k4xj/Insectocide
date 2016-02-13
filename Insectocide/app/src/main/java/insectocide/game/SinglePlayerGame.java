@@ -10,7 +10,6 @@ import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.widget.RelativeLayout;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;

@@ -2,13 +2,9 @@ package insectocide.logic;
 
 import android.content.Context;
 import android.graphics.drawable.AnimationDrawable;
-import android.media.Image;
 import android.util.DisplayMetrics;
 import android.widget.ImageView;
 
-/**
- * Created by Zukis87 on 06/02/2016.
- */
 public abstract class SpaceEntity extends ImageView {
     protected int firePower;
     protected int fireSpeed;

@@ -1,16 +1,11 @@
 package insectocide.logic;
 
 import android.content.Context;
-import android.graphics.RectF;
 import android.graphics.drawable.AnimationDrawable;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
-import insectocide.game.R;
 
-/**
- * Created by Zukis87 on 06/02/2016.
- */
 
 public class Insect extends SpaceEntity {
 
