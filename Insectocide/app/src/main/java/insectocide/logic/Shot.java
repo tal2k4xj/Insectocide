@@ -7,9 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-/**
- * Created by DELL1 on 2/12/2016.
- */
 public class Shot extends ImageView {
 
     private int power;
@@ -44,7 +41,14 @@ public class Shot extends ImageView {
             if(entity.getColor().equals("red")){
                 y = entity.getY() - height;
             }else if(entity.getColor().equals("blue")){
-                y = entity.getY() + height;
+                y = entity.getY() + entity.getHeight();
+            }
+        }else if(entity instanceof Insect){
+            startAnimationId = getResources().getIdentifier("bug_"+((Insect) entity).getShootDirection()+"_shot_animation", "drawable", "insectocide.game");
+            if(((Insect) entity).getShootDirection().equals("up")){
+                y = entity.getY() - height;
+            }else if(((Insect) entity).getShootDirection().equals("down")){
+                y = entity.getY() + entity.getHeight();
             }
         }
         setX((float)x);
@@ -59,12 +63,28 @@ public class Shot extends ImageView {
         animation.start();
     }
 
+    public boolean isOutOfScreen(){
+        if(getY()+width == 0){
+            return true;
+        }
+        if(getY()-width == metrics.heightPixels){
+            return true;
+        }
+        return false;
+    }
+
     public void shoot(){
         if (entity instanceof SpaceShip){
             if(entity.getColor().equals("red")){
-                setY(getY() - (speed * 5));
+                setY(getY() - (speed * 10));
             }else if(entity.getColor().equals("blue")){
-                setY(getY() + (speed * 5));
+                setY(getY() + (speed * 10));
+            }
+        }else if (entity instanceof Insect){
+            if(((Insect) entity).getShootDirection().equals("up")){
+                setY(getY() - (speed * 7));
+            }else if (((Insect) entity).getShootDirection().equals("down")){
+                setY(getY() + (speed * 7));
             }
         }
     }
