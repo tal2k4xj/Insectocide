@@ -25,7 +25,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     private final String DEFAULT_COLOR = "red";
     private final int INSECTS_ROWS = 3;
     private final int INSECTS_COLS = 10;
-    private final long SHOOT_DELAY = 500;
+    private final long SHOOT_DELAY = 1000;
     private Sensor accelerometer;
     private SensorManager sm;
     private SpaceShip ship;
@@ -34,7 +34,10 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     private Handler handler;
     private List<Shot> shoots;
     private RelativeLayout rl;
-    private long lastShootTime;
+    private Thread checkShots;
+    private long lastShootTime = 0;
+    boolean isActivityPaused = false;
+    boolean isStartAnimationDone = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,39 +51,26 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         initShip();
         initInsects();
 
-        //delay the sensors for the start animations
-
-        lastShootTime = 7000;
-
         handler = new Handler();
         handler.postDelayed(new Runnable() {
             public void run() {
+                isStartAnimationDone = true;
                 initAccelerometer();
+                initCheckShotsThread();
                 ;
             }
         }, 7000);
-
     }
 
     @Override
     protected void onStart(){
         super.onStart();
-        Thread checkShots = new Thread(new Runnable() {
-            public void run() {
-                while (true) {
-                    try {
-                        for (Shot s : shoots) {
-                            s.shoot();
-                        }
+        if (isActivityPaused){
+            isActivityPaused = false;
+            initAccelerometer();
+            initCheckShotsThread();
+        }
 
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
-        checkShots.start();
     }
 
     private void initShip(){
@@ -111,6 +101,37 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         sm=(SensorManager)getSystemService(SENSOR_SERVICE);
         accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sm.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
+    }
+
+    private void unRegisterAccelerometer(){
+        sm.unregisterListener(this, accelerometer);
+    }
+
+    private void initCheckShotsThread() {
+        checkShots = new Thread(new Runnable() {
+            public void run() {
+                while (!isActivityPaused) {
+                    try {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                for (Shot s : shoots) {
+                                    if(!s.isOutOfScreen()) {
+                                        s.shoot();
+                                    }else{
+                                        rl.removeView(s);
+                                    }
+                                }
+                            }
+                        });
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        checkShots.start();
     }
 
     @Override
@@ -144,7 +165,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
 
     public boolean onTouchEvent(MotionEvent event) {
         long time = event.getDownTime();
-        if(time-lastShootTime > SHOOT_DELAY ) {
+        if(time-lastShootTime > SHOOT_DELAY && isStartAnimationDone) {
             Shot s = ship.fire();
             shoots.add(s);
             s.bringToFront();
@@ -152,5 +173,12 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
             lastShootTime = time;
         }
         return false;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        isActivityPaused = true;
+        unRegisterAccelerometer();
     }
 }

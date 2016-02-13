@@ -47,7 +47,7 @@ public class Shot extends ImageView {
             }
         }
         setX((float)x);
-        setY((float)y);
+        setY((float) y);
         startAnimation(startAnimationId);
 
     }
@@ -58,12 +58,27 @@ public class Shot extends ImageView {
         animation.start();
     }
 
+    public boolean isOutOfScreen(){
+        if (entity instanceof SpaceShip){
+            if(entity.getColor().equals("red")){
+                if(getY()+width == 0){
+                    return true;
+                }
+            }else if(entity.getColor().equals("blue")){
+                if(getY()-width == metrics.heightPixels){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public void shoot(){
         if (entity instanceof SpaceShip){
             if(entity.getColor().equals("red")){
-                setY(getY() - (speed * 4));
+                setY(getY() - (speed * 10));
             }else if(entity.getColor().equals("blue")){
-                setY(getY() + (speed * 4));
+                setY(getY() + (speed * 10));
             }
         }
     }
