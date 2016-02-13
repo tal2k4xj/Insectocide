@@ -33,6 +33,17 @@ public abstract class SpaceEntity extends ImageView {
         return shot;
     }
 
+    public void gotHit(int power){
+        health = health-power;
+    }
+
+    public boolean isDead(){
+        if (health == 0){
+            return true;
+        }
+        return false;
+    }
+
     public String getColor (){
         return this.color;
     }

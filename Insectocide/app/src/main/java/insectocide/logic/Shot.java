@@ -53,7 +53,7 @@ public class Shot extends ImageView {
                 y = entity.getY() + entity.getHeight();
             }
         }
-        setX((float)x);
+        setX((float) x);
         setY((float) y);
         startAnimation(startAnimationId);
 
@@ -89,5 +89,13 @@ public class Shot extends ImageView {
                 setY(getY() + (speed * 7));
             }
         }
+    }
+
+    public int getPower() {
+        return power;
+    }
+
+    public SpaceEntity getEntity() {
+        return entity;
     }
 }
