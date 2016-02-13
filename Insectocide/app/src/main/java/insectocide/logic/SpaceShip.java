@@ -10,17 +10,11 @@ import android.view.ViewGroup;
 import insectocide.game.R;
 
 public class SpaceShip extends SpaceEntity {
-    private final int MAX_ENTITY = 6;
-    private final int MIN_ENTITY = 2;
-    private final int DEFAULT_HEALTH = 3;
     private static String lastMovement;
 
     public SpaceShip(String color, Context context , DisplayMetrics metrics) {
         super(context,metrics);
-        this.firePower = MIN_ENTITY;
-        this.fireSpeed = MIN_ENTITY;
-        this.health = DEFAULT_HEALTH;
-        this.movementSpeed = MIN_ENTITY;
+        setDefaults();
         this.color = color;
         lastMovement = "middle";
         setVisibility(View.VISIBLE);
@@ -85,5 +79,12 @@ public class SpaceShip extends SpaceEntity {
                 break;
             }
         lastMovement=direction;
+    }
+
+    private void setDefaults() {
+        this.health=3;
+        this.movementSpeed=2;
+        this.firePower=1;
+        this.fireSpeed=2;
     }
 }

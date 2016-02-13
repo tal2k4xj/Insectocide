@@ -43,7 +43,14 @@ public class Shot extends ImageView {
             if(entity.getColor().equals("red")){
                 y = entity.getY() - height;
             }else if(entity.getColor().equals("blue")){
-                y = entity.getY() + height;
+                y = entity.getY() + entity.getHeight();
+            }
+        }else if(entity instanceof Insect){
+            startAnimationId = getResources().getIdentifier("bug_"+((Insect) entity).getShootDirection()+"_shot_animation", "drawable", "insectocide.game");
+            if(((Insect) entity).getShootDirection().equals("up")){
+                y = entity.getY() - height;
+            }else if(((Insect) entity).getShootDirection().equals("down")){
+                y = entity.getY() + entity.getHeight();
             }
         }
         setX((float)x);
@@ -59,16 +66,11 @@ public class Shot extends ImageView {
     }
 
     public boolean isOutOfScreen(){
-        if (entity instanceof SpaceShip){
-            if(entity.getColor().equals("red")){
-                if(getY()+width == 0){
-                    return true;
-                }
-            }else if(entity.getColor().equals("blue")){
-                if(getY()-width == metrics.heightPixels){
-                    return true;
-                }
-            }
+        if(getY()+width == 0){
+            return true;
+        }
+        if(getY()-width == metrics.heightPixels){
+            return true;
         }
         return false;
     }
@@ -79,6 +81,12 @@ public class Shot extends ImageView {
                 setY(getY() - (speed * 10));
             }else if(entity.getColor().equals("blue")){
                 setY(getY() + (speed * 10));
+            }
+        }else if (entity instanceof Insect){
+            if(((Insect) entity).getShootDirection().equals("up")){
+                setY(getY() - (speed * 7));
+            }else if (((Insect) entity).getShootDirection().equals("down")){
+                setY(getY() + (speed * 7));
             }
         }
     }

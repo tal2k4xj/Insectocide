@@ -1,8 +1,6 @@
 package insectocide.game;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.graphics.drawable.AnimationDrawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -34,10 +32,11 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     private Handler handler;
     private List<Shot> shoots;
     private RelativeLayout rl;
-    private Thread checkShots;
     private long lastShootTime = 0;
-    boolean isActivityPaused = false;
-    boolean isStartAnimationDone = false;
+    private boolean isActivityPaused = false;
+    private boolean isStartAnimationDone = false;
+    private Thread insectShots;
+    private Thread moveShots;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +56,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                 isStartAnimationDone = true;
                 initAccelerometer();
                 initCheckShotsThread();
+                startInsectsShots();
                 ;
             }
         }, 7000);
@@ -69,6 +69,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
             isActivityPaused = false;
             initAccelerometer();
             initCheckShotsThread();
+            startInsectsShots();
         }
 
     }
@@ -107,8 +108,35 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         sm.unregisterListener(this, accelerometer);
     }
 
+    private void startInsectsShots(){
+        insectShots = new Thread(new Runnable() {
+            public void run() {
+                while (!isActivityPaused) {
+                    try {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Random rand = new Random();
+                                int i = rand.nextInt(INSECTS_COLS);
+                                int j = rand.nextInt(INSECTS_ROWS);
+                                Shot s = insects[i][j].fire();
+                                shoots.add(s);
+                                s.bringToFront();
+                                rl.addView(s);
+                            }
+                        });
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        insectShots.start();
+    }
+
     private void initCheckShotsThread() {
-        checkShots = new Thread(new Runnable() {
+        moveShots = new Thread(new Runnable() {
             public void run() {
                 while (!isActivityPaused) {
                     try {
@@ -131,7 +159,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                 }
             }
         });
-        checkShots.start();
+        moveShots.start();
     }
 
     @Override
@@ -179,6 +207,10 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     protected void onStop() {
         super.onStop();
         isActivityPaused = true;
+        insectShots.interrupt();
+        moveShots.interrupt();
+        insectShots = null;
+        moveShots = null;
         unRegisterAccelerometer();
     }
 }

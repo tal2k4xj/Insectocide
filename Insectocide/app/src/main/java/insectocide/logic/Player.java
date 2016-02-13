@@ -5,4 +5,6 @@ package insectocide.logic;
  */
 public class Player {
 
+
+
 }

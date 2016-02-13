@@ -15,10 +15,12 @@ public class Insect extends SpaceEntity {
 
     private final int MAX_INSECTS = 10;
     protected InsectType type;
+    private String shootDirection;
 
     public Insect(InsectType type ,Context context,DisplayMetrics metrics) {
         super(context,metrics);
         this.type = type;
+        this.shootDirection = "down"; // need to be changed for multiplayer
         setImageByType();
         initPowersByType();
         setVisibility(View.VISIBLE);
@@ -72,5 +74,13 @@ public class Insect extends SpaceEntity {
         this.movementSpeed=2;
         this.firePower=1;
         this.fireSpeed=2;
+    }
+
+    public String getShootDirection() {
+        return shootDirection;
+    }
+
+    public void setShootDirection(String shootDirection) {
+        this.shootDirection = shootDirection;
     }
 }
