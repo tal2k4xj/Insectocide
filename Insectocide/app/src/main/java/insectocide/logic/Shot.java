@@ -3,13 +3,9 @@ package insectocide.logic;
 import android.content.Context;
 import android.graphics.drawable.AnimationDrawable;
 import android.util.DisplayMetrics;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-/**
- * Created by DELL1 on 2/12/2016.
- */
 public class Shot extends ImageView {
 
     private int power;
@@ -28,35 +24,51 @@ public class Shot extends ImageView {
         speed = entity.getFireSpeed();
         this.entity = entity;
         this.metrics = metrics;
-        setPositionAndDimensions();
-        setVisibility(View.VISIBLE);
+        setDrawingCacheEnabled(true);
+        setupShot();
+        setVisibility(VISIBLE);
     }
 
-    public void setPositionAndDimensions() {
+    public void setupShot() {
+        setSizeAndXPosition();
         int startAnimationId = 0;
+        if (entity instanceof SpaceShip){
+            startAnimationId = setSpaceShipShot();
+        }else if(entity instanceof Insect){
+            startAnimationId = setInsectShot();
+        }
+        setY((float) y);
+        startAnimation(startAnimationId);
+    }
+
+    private void setSizeAndXPosition() {
         width = metrics.heightPixels * 0.06 / 2.5;
         height = metrics.heightPixels * 0.06;
         setLayoutParams(new ViewGroup.LayoutParams((int) width, (int) height));
         x = entity.getX() + entity.getWidth()/2 - width/2;
-        if (entity instanceof SpaceShip){
-            startAnimationId = getResources().getIdentifier(entity.getColor()+"_ship_shot_animation", "drawable", "insectocide.game");
-            if(entity.getColor().equals("red")){
-                y = entity.getY() - height;
-            }else if(entity.getColor().equals("blue")){
-                y = entity.getY() + entity.getHeight();
-            }
-        }else if(entity instanceof Insect){
-            startAnimationId = getResources().getIdentifier("bug_"+((Insect) entity).getShootDirection()+"_shot_animation", "drawable", "insectocide.game");
-            if(((Insect) entity).getShootDirection().equals("up")){
-                y = entity.getY() - height;
-            }else if(((Insect) entity).getShootDirection().equals("down")){
-                y = entity.getY() + entity.getHeight();
-            }
-        }
         setX((float) x);
-        setY((float) y);
-        startAnimation(startAnimationId);
+    }
 
+    private int setSpaceShipShot() {
+        int startAnimationId;
+        startAnimationId = getResources().getIdentifier(entity.getColor()+"_ship_shot_animation", "drawable", "insectocide.game");
+        if(entity.getColor().equals("red")){
+            y = entity.getY() - height;
+        }else if(entity.getColor().equals("blue")){
+            y = entity.getY() + entity.getHeight();
+        }
+        return startAnimationId;
+    }
+
+    private int setInsectShot() {
+        int startAnimationId;
+        startAnimationId = getResources().getIdentifier("bug_"+((Insect) entity).getShootDirection()+"_shot_animation", "drawable", "insectocide.game");
+        if(((Insect) entity).getShootDirection().equals("up")){
+            y = entity.getY() - height;
+        }else if(((Insect) entity).getShootDirection().equals("down")){
+            y = entity.getY() + entity.getHeight();
+        }
+        return startAnimationId;
     }
 
     private void startAnimation(int startAnimationId) {
@@ -97,5 +109,10 @@ public class Shot extends ImageView {
 
     public SpaceEntity getEntity() {
         return entity;
+    }
+
+    public void destrtoy(){
+        animation.stop();
+        setVisibility(INVISIBLE);
     }
 }

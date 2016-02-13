@@ -2,10 +2,11 @@ package insectocide.game;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
+
+import java.util.Locale;
 
 public class MainMenu extends Activity implements View.OnClickListener {
 
@@ -17,13 +18,21 @@ public class MainMenu extends Activity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
-
+        initEnglishDefaultLanguage();
         singlePlayerButton = findViewById(R.id.singlePlayerButton);
         singlePlayerButton.setOnClickListener(this);
         MultiPlayerButton = findViewById(R.id.MultiPlayerButton);
         MultiPlayerButton.setOnClickListener(this);
         SettingsButton = findViewById(R.id.SettingsButton);
         SettingsButton.setOnClickListener(this);
+    }
+
+    private void initEnglishDefaultLanguage() {
+        Locale locale = new Locale("en_US");
+        Locale.setDefault(locale);
+        Configuration config = new Configuration();
+        config.locale = locale;
+        getApplicationContext().getResources().updateConfiguration(config, null);
     }
 
     @Override

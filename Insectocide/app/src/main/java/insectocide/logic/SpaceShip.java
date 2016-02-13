@@ -2,12 +2,9 @@ package insectocide.logic;
 
 import android.content.Context;
 import android.graphics.drawable.AnimationDrawable;
-import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
-
-import insectocide.game.R;
 
 public class SpaceShip extends SpaceEntity {
     private static String lastMovement;

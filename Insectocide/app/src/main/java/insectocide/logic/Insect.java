@@ -5,11 +5,7 @@ import android.graphics.drawable.AnimationDrawable;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
-import insectocide.game.R;
 
-/**
- * Created by Zukis87 on 06/02/2016.
- */
 
 public class Insect extends SpaceEntity {
 
@@ -17,10 +13,10 @@ public class Insect extends SpaceEntity {
     protected InsectType type;
     private String shootDirection;
 
-    public Insect(InsectType type ,Context context,DisplayMetrics metrics) {
+    public Insect(InsectType type, Context context, DisplayMetrics metrics) {
         super(context,metrics);
         this.type = type;
-        this.shootDirection = "down"; // need to be changed for multiplayer
+        shootDirection = "down"; // need to be changed for multiplayer
         setImageByType();
         initPowersByType();
         setVisibility(View.VISIBLE);
