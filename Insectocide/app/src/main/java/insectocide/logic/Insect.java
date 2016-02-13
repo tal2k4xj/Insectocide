@@ -1,6 +1,7 @@
 package insectocide.logic;
 
 import android.content.Context;
+import android.graphics.RectF;
 import android.graphics.drawable.AnimationDrawable;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -16,7 +17,7 @@ public class Insect extends SpaceEntity {
     private final int MAX_INSECTS = 10;
     protected InsectType type;
 
-    public Insect(InsectType type ,Context context,DisplayMetrics metrics) {
+    public Insect(InsectType type, Context context, DisplayMetrics metrics) {
         super(context,metrics);
         this.type = type;
         setImageByType();

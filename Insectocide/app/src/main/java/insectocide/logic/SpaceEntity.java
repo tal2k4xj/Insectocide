@@ -26,6 +26,7 @@ public abstract class SpaceEntity extends ImageView {
     public SpaceEntity(Context context , DisplayMetrics metrics) {
         super(context);
         this.metrics = metrics;
+        setDrawingCacheEnabled(true);
     }
 
     public Shot fire(){

@@ -28,8 +28,9 @@ public class Shot extends ImageView {
         speed = entity.getFireSpeed();
         this.entity = entity;
         this.metrics = metrics;
+        setDrawingCacheEnabled(true);
         setPositionAndDimensions();
-        setVisibility(View.VISIBLE);
+        setVisibility(VISIBLE);
     }
 
     public void setPositionAndDimensions() {
@@ -47,7 +48,7 @@ public class Shot extends ImageView {
             }
         }
         setX((float)x);
-        setY((float)y);
+        setY((float) y);
         startAnimation(startAnimationId);
 
     }
@@ -61,10 +62,14 @@ public class Shot extends ImageView {
     public void shoot(){
         if (entity instanceof SpaceShip){
             if(entity.getColor().equals("red")){
-                setY(getY() - (speed * 4));
+                setY(getY() - (speed * 5));
             }else if(entity.getColor().equals("blue")){
-                setY(getY() + (speed * 4));
+                setY(getY() + (speed * 5));
             }
         }
+    }
+    public void destrtoy(){
+        animation.stop();
+        setVisibility(INVISIBLE);
     }
 }
