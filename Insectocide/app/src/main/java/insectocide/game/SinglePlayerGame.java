@@ -1,7 +1,6 @@
 package insectocide.game;
 
 import android.app.Activity;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -17,6 +16,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import insectocide.logic.Insect;
 import insectocide.logic.InsectType;
 import insectocide.logic.Shot;
@@ -48,8 +49,8 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single_player_game);
-        shipShoots = Collections.synchronizedList(new ArrayList<Shot>());
-        insectsShoots = Collections.synchronizedList(new ArrayList<Shot>());
+        shipShoots = new CopyOnWriteArrayList<Shot>();
+        insectsShoots = new CopyOnWriteArrayList<Shot>();
         metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         rl = (RelativeLayout)findViewById(R.id.singlePlayerLayout);
@@ -118,7 +119,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         sm.unregisterListener(this, accelerometer);
     }
 
-    private void startInsectsShotsThread(){
+    private synchronized void startInsectsShotsThread(){
         insectShots = new Thread(new Runnable() {
             public void run() {
                 while (!isActivityPaused) {
@@ -137,7 +138,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                                 }
                             }
                         });
-                        Thread.sleep(2000);
+                        Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -147,7 +148,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         insectShots.start();
     }
 
-    private void initMoveShotsThread() {
+    private synchronized void initMoveShotsThread() {
         moveShots = new Thread(new Runnable() {
             public void run() {
                 while (!isActivityPaused) {
@@ -214,6 +215,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                         insects[i][j].gotHit(s.getPower());
                         if (insects[i][j].isDead()) {
                             removeView(insects[i][j]);
+                            spaceShip.getPowerFromInsect(insects[i][j].getType());
                             insects[i][j] = null;
                         }
                         removeShot(s);
@@ -221,6 +223,10 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                 }
             }
         }
+    }
+
+    private void getInsectPower(InsectType type) {
+
     }
 
     private void checkIfShipHit(Shot s){
@@ -287,7 +293,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
 
     public boolean onTouchEvent(MotionEvent event) {
         long time = event.getDownTime();
-        if(time-lastShootTime > SHOOT_DELAY && isStartAnimationDone) {
+        if(isStartAnimationDone && time-lastShootTime > SHOOT_DELAY ) {
             Shot s = spaceShip.fire();
             shipShoots.add(s);
             s.bringToFront();

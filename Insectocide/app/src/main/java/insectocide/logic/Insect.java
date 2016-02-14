@@ -41,7 +41,7 @@ public class Insect extends SpaceEntity {
         setLayoutParams(new ViewGroup.LayoutParams((int) width, (int) height));
         x = metrics.widthPixels + (metrics.widthPixels - (MAX_INSECTS*width + (MAX_INSECTS-1)*metrics.widthPixels*0.02))/2 + (i*width) + (i*metrics.widthPixels*0.02);
         y = metrics.heightPixels*0.35 + j*height;
-        setY((float)y);
+        setY((float) y);
         setX((float)x);
         animate().x(getX() - this.metrics.widthPixels);
         animate().setDuration(7000);
@@ -79,5 +79,9 @@ public class Insect extends SpaceEntity {
 
     public void setShootDirection(String shootDirection) {
         this.shootDirection = shootDirection;
+    }
+
+    public InsectType getType() {
+        return type;
     }
 }

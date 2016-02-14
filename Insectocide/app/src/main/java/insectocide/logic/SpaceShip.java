@@ -1,7 +1,6 @@
 package insectocide.logic;
 
 import android.content.Context;
-import android.graphics.RectF;
 import android.graphics.drawable.AnimationDrawable;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -84,5 +83,22 @@ public class SpaceShip extends SpaceEntity {
         movementSpeed=2;
         firePower=1;
         fireSpeed=2;
+    }
+
+    public void getPowerFromInsect(InsectType type) {
+        switch(type){
+            case ExtraHealth:
+                health+=1;
+                break;
+            case PowerShoot:
+                firePower+=1;
+                break;
+            case SpeedyShoot:
+                fireSpeed+=1;
+                break;
+            case DoubleShoot:
+                movementSpeed+=1;
+                break;
+        }
     }
 }

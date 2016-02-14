@@ -1,7 +1,6 @@
 package insectocide.logic;
 
 import android.content.Context;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.AnimationDrawable;
 import android.util.DisplayMetrics;
