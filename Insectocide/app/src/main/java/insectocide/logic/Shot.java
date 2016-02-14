@@ -9,8 +9,8 @@ import android.widget.ImageView;
 
 public class Shot extends ImageView {
 
-    private int power;
-    private int speed;
+    private float power;
+    private float speed;
     private double width;
     private double height;
     protected double y;
@@ -104,7 +104,7 @@ public class Shot extends ImageView {
         }
     }
 
-    public int getPower() {
+    public float getPower() {
         return power;
     }
 

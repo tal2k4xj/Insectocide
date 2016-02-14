@@ -6,7 +6,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
@@ -305,7 +304,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         RectF r2 = spaceShip.getRect();
         if (r1.intersect(r2)){
             spaceShip.gotHit(s.getPower());
-            spaceShip.resetPowers();
+            spaceShip.reducePowers();
             if(spaceShip.isDead()){
                 loseGame();
             }
@@ -352,7 +351,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     }
 
     private void removeShipLive(){
-        for (int i=spaceShip.getHealth(); i<shipLives.size() ; i++){
+        for (int i=(int)spaceShip.getHealth(); i<shipLives.size() ; i++){
             ImageView live = new ImageView(this);
             live = shipLives.get(i);
             live.setVisibility(View.VISIBLE);

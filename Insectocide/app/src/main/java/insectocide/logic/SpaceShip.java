@@ -90,21 +90,21 @@ public class SpaceShip extends SpaceEntity {
         switch(type){
             case ExtraHealth:
                 if (health <MAX_HEALTH)
-                    health+=1;
+                    health+=0.5;
                 break;
             case PowerShoot:
-                firePower+=1;
+                firePower+=0.5;
                 break;
             case SpeedyShoot:
-                fireSpeed+=1;
+                fireSpeed+=0.5;
                 break;
             case DoubleShoot:
-                movementSpeed+=1;
+                movementSpeed+=0.5;
                 break;
         }
     }
 
-    public void resetPowers() {
+    public void reducePowers() {
         movementSpeed-=1;
         firePower-=1;
         fireSpeed-=1;

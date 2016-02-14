@@ -7,11 +7,11 @@ import android.util.DisplayMetrics;
 import android.widget.ImageView;
 
 public abstract class SpaceEntity extends ImageView {
-    protected int firePower;
-    protected int fireSpeed;
+    protected float firePower;
+    protected float fireSpeed;
     protected Shot shot;
-    protected int health;
-    protected int movementSpeed;
+    protected float health;
+    protected float movementSpeed;
     protected double y;
     protected double x;
     protected double width;
@@ -32,7 +32,7 @@ public abstract class SpaceEntity extends ImageView {
         return shot;
     }
 
-    public void gotHit(int power){
+    public void gotHit(float power){
         health = health-power;
     }
 
@@ -46,19 +46,19 @@ public abstract class SpaceEntity extends ImageView {
 
     public abstract void move(String direction);
 
-    public int getFirePower() {
+    public float getFirePower() {
         return firePower;
     }
 
-    public void setFirePower(int firePower) {
+    public void setFirePower(float firePower) {
         this.firePower = firePower;
     }
 
-    public int getFireSpeed() {
+    public float getFireSpeed() {
         return fireSpeed;
     }
 
-    public void setFireSpeed(int fireSpeed) {
+    public void setFireSpeed(float fireSpeed) {
         this.fireSpeed = fireSpeed;
     }
     public RectF getRect(){
@@ -66,19 +66,19 @@ public abstract class SpaceEntity extends ImageView {
         return r;
     }
 
-    public int getHealth() {
+    public float getHealth() {
         return health;
     }
 
-    public void setHealth(int health) {
+    public void setHealth(float health) {
         this.health = health;
     }
 
-    public int getMovementSpeed() {
+    public float getMovementSpeed() {
         return movementSpeed;
     }
 
-    public void setMovementSpeed(int movementSpeed) {
+    public void setMovementSpeed(float movementSpeed) {
         this.movementSpeed = movementSpeed;
     }
 }
