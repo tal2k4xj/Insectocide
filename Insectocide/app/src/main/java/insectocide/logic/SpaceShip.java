@@ -101,4 +101,10 @@ public class SpaceShip extends SpaceEntity {
                 break;
         }
     }
+
+    public void resetPowers() {
+        movementSpeed=2;
+        firePower=1;
+        fireSpeed=2;
+    }
 }

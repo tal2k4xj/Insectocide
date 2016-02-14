@@ -268,6 +268,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         RectF r2 = spaceShip.getRect();
         if (r1.intersect(r2)){
             spaceShip.gotHit(s.getPower());
+            spaceShip.resetPowers();
             if(spaceShip.isDead()){
                 loseGame();
             }
