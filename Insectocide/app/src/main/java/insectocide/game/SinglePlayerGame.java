@@ -67,7 +67,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         rl = (RelativeLayout)findViewById(R.id.singlePlayerLayout);
 
         initShip();
-        upDateLives();
+        updateLives();
         initInsects();
         initHandler();
     }
@@ -95,7 +95,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
             initMoveShotsThread();
             startInsectsShotsThread();
         }
-
     }
 
     private void initShip(){
@@ -164,21 +163,20 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
             private int calculateInsectShootingTime() {
                 int numOfInsects = liveInsects.size();
                 if (numOfInsects>=25){
-                    return 500;
+                    return 450;
                 }else if(numOfInsects>=20){
-                    return 850;
+                    return 750;
                 }else if(numOfInsects>=15){
-                    return 1300;
+                    return 1100;
                 }else if(numOfInsects>=10){
-                    return 1750;
+                    return 1550;
                 }else {
-                    return 2200;
+                    return 2000;
                 }
             }
         });
         insectShots.start();
     }
-
     private synchronized void initMoveShotsThread() {
         moveShots = new Thread(new Runnable() {
             public void run() {
@@ -203,7 +201,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                                         removeShot(s);
                                     }
                                 }
-                                upDateLives();;
+                                updateLives();;
                             }
                         });
                         Thread.sleep(100);
@@ -222,11 +220,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
             if (r1.intersect(r2)) {
                 insect.gotHit(shot.getPower());
                 if (insect.isDead()) {
-                    insect.die();
-                    spaceShip.getPowerFromInsect(insect.getType());
-                    showInsectBonus(insect);
-                    liveInsects.remove(insect);
-                    //removeView(insect);
+                    killInsect(insect);
                 }
                 if (liveInsects.size()==0){
                     winGame();
@@ -234,6 +228,13 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                 removeShot(shot);
             }
         }
+    }
+
+    private void killInsect(Insect insect) {
+        insect.dieAnimation();
+        spaceShip.getPowerFromInsect(insect.getType());
+        showInsectBonus(insect);
+        liveInsects.remove(insect);
     }
 
     private void showInsectBonus(Insect insect){
@@ -255,7 +256,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                 bonus.setVisibility(View.INVISIBLE);
                 ;
             }
-        }, 3000);
+        }, 2500);
     }
 
     private void winGame() {
@@ -266,10 +267,21 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         int score = calcScore();
         scoreText.setText("Score: " + score);
         scoreText.setVisibility(View.VISIBLE);
+        insectShots.interrupt();
+        moveShots.interrupt();
+        insectShots = null;
+        moveShots = null;
+        unRegisterAccelerometer();
+        this.finish();
     }
 
     private int calcScore() {
-        return (getNumOfKilledInsects()*10000)/(timeOfGame);
+        int score=0;
+        if (getNumOfKilledInsects() == INSECTS_COLS*INSECTS_ROWS)
+            score+=100000;
+        score += getNumOfKilledInsects()*10000;
+        score /= (timeOfGame/4);
+        return score;
     }
 
     private int getNumOfKilledInsects() {
@@ -314,7 +326,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
 
     private void loseGame() {
         endGame();
-        removeView(spaceShip);
     }
 
     private void removeShot(Shot s) {
@@ -326,7 +337,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
             insectsShoots.remove(s);
     }
 
-    private void upDateLives(){
+    private void updateLives(){
         if (shipLives.size() > spaceShip.getHealth()){
             removeShipLive();
         }else if (shipLives.size() < spaceShip.getHealth()){
@@ -338,11 +349,11 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         for (int i=shipLives.size(); i<spaceShip.getHealth() ; i++){
             ImageView live = new ImageView(this);
             live.setBackgroundResource(R.drawable.live);
-            double length = metrics.heightPixels*0.1;
+            float length = metrics.heightPixels*0.07f;
             live.setLayoutParams(new ViewGroup.LayoutParams((int) length, (int) length));
-            live.setY(0);
-            double x = i*length;
-            live.setX((float) x);
+            live.setY(0.2f);
+            float x = i*length + 0.2f;
+            live.setX(x);
             live.bringToFront();
             live.setVisibility(View.VISIBLE);
             rl.addView(live);
@@ -351,11 +362,11 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     }
 
     private void removeShipLive(){
+
         for (int i=(int)spaceShip.getHealth(); i<shipLives.size() ; i++){
-            ImageView live = new ImageView(this);
-            live = shipLives.get(i);
-            live.setVisibility(View.VISIBLE);
-            rl.removeView(live);
+            ImageView live = shipLives.get(i);
+            live.setVisibility(View.INVISIBLE);
+            removeView(live);
             shipLives.remove(live);
         }
     }
@@ -374,6 +385,38 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         float curMovement = event.values[1];
         moveShip(curMovement);
     }
+//    private void moveInsects(boolean isRight){
+//       // String direction = getInsectsDirection();
+//        for (Insect insect:liveInsects) {
+//            if(isRight) {
+//                insect.move("right");
+//            }else {
+//                insect.move("left");
+//            }
+//        }
+//    }
+
+//
+//    private int getMostLeftInsectIndex(int leftIndex) {
+//        for (int i=leftIndex ; i < INSECTS_COLS ; i++){
+//            for(int j=0 ; j < INSECTS_ROWS ; j++){
+//                if(!insects[i][j].isDead()) {
+//                    return i;
+//                }
+//            }
+//        }
+//        return -1;
+//    }
+//    private int getMostRightInsectIndex(int rightIndex) {
+//        for (int i=rightIndex ; i > 0 ; i--){
+//            for(int j=0 ; j < INSECTS_ROWS ; j++){
+//                if(!insects[i][j].isDead()) {
+//                    return i;
+//                }
+//            }
+//        }
+//        return -1;
+//    }
 
     private void moveShip(float curMovement) {
 

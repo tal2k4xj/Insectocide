@@ -27,6 +27,20 @@ public class Insect extends SpaceEntity {
 
     @Override
     public void move(String direction) {
+        switch(direction){
+            case "left":
+                setX(getX() - (movementSpeed*3));
+                break;
+            case "right":
+                setX(getX() + (movementSpeed*3));
+                break;
+            case "up":
+                setY(getY() - (movementSpeed*3));
+                break;
+            case "down":
+                setY(getY() + (movementSpeed*3));
+                break;
+        }
 
     }
 
@@ -85,7 +99,7 @@ public class Insect extends SpaceEntity {
         return type;
     }
 
-    public void die(){
+    public void dieAnimation(){
         int drawableId = getResources().getIdentifier("bug_die_animation" , "drawable", "insectocide.game");
         this.setBackgroundResource(drawableId);
         animation = (AnimationDrawable)this.getBackground();
