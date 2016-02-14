@@ -12,8 +12,6 @@ import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -223,10 +221,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                 }
             }
         }
-    }
-
-    private void getInsectPower(InsectType type) {
-
     }
 
     private void checkIfShipHit(Shot s){
