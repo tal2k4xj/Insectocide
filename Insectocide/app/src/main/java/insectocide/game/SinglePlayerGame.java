@@ -308,13 +308,13 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
 
     private void moveShip(float curMovement) {
 
-        if (curMovement >0.5) {
+        if (curMovement >1) {
             if(curMovement>2){
                 spaceShip.move("right3");
             }else {
                 spaceShip.move("right2");
             }
-        }else if(curMovement<-0.5){
+        }else if(curMovement<-1){
             if(curMovement<-2){
                 spaceShip.move("left3");
             }else {
