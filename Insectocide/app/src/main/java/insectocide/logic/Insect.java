@@ -84,4 +84,11 @@ public class Insect extends SpaceEntity {
     public InsectType getType() {
         return type;
     }
+
+    public void die(){
+        int drawableId = getResources().getIdentifier("bug_die_animation" , "drawable", "insectocide.game");
+        this.setBackgroundResource(drawableId);
+        animation = (AnimationDrawable)this.getBackground();
+        animation.start();
+    }
 }

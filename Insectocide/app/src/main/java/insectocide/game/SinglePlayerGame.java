@@ -30,7 +30,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     private final int INSECTS_ROWS = 3;
     private final int INSECTS_COLS = 10;
     private final long SHOOT_DELAY = 1000;
-    private final long START_ANIMATION_DELAY = 8000;
+    private final long START_ANIMATION_DELAY = 7200;
     private int timeOfGame;
     private Sensor accelerometer;
     private SensorManager sm;
@@ -165,15 +165,15 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
             private int calculateInsectShootingTime() {
                 int numOfInsects = liveInsects.size();
                 if (numOfInsects>=25){
-                    return 400;
+                    return 500;
                 }else if(numOfInsects>=20){
-                    return 600;
+                    return 850;
                 }else if(numOfInsects>=15){
-                    return 800;
+                    return 1300;
                 }else if(numOfInsects>=10){
-                    return 1000;
+                    return 1750;
                 }else {
-                    return 1500;
+                    return 2200;
                 }
             }
         });
@@ -223,9 +223,11 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
             if (r1.intersect(r2)) {
                 insect.gotHit(shot.getPower());
                 if (insect.isDead()) {
-                    removeView(insect);
+                    insect.die();
                     spaceShip.getPowerFromInsect(insect.getType());
+                    showInsectBonus(insect);
                     liveInsects.remove(insect);
+                    //removeView(insect);
                 }
                 if (liveInsects.size()==0){
                     winGame();
@@ -233,6 +235,28 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                 removeShot(shot);
             }
         }
+    }
+
+    private void showInsectBonus(Insect insect){
+        final ImageView bonus = new ImageView(this);
+        int drawableId = getResources().getIdentifier(insect.getType().getColor().toLowerCase()+"_bonus" , "drawable", "insectocide.game");
+        bonus.setBackgroundResource(drawableId);
+        double length = metrics.heightPixels*0.1;
+        bonus.setLayoutParams(new ViewGroup.LayoutParams((int) length, (int) length));
+        bonus.setY(insect.getY());
+        bonus.setX(insect.getX());
+        bonus.bringToFront();
+        bonus.setVisibility(View.VISIBLE);
+        rl.addView(bonus);
+        bonus.animate().y(bonus.getY() - 100);
+        bonus.animate().setDuration(3000);
+        handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                bonus.setVisibility(View.INVISIBLE);
+                ;
+            }
+        }, 3000);
     }
 
     private void winGame() {
