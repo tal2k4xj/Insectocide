@@ -48,10 +48,8 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     private boolean isStartAnimationDone = false;
     private Thread insectShots;
     private Thread moveShots;
-    private Thread checkHitShots;
     private Thread timer;
     private TextView scoreText;
-    private TextView livesText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,13 +63,11 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         timeOfGame = 0;
         scoreText = (TextView) findViewById(R.id.ScoreText);
         scoreText.setVisibility(View.INVISIBLE);
-        //livesText = (TextView) findViewById(R.id.Lives);
 
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         rl = (RelativeLayout)findViewById(R.id.singlePlayerLayout);
 
         initShip();
-        //livesText.setText("" + spaceShip.getHealth());
         upDateLives();
         initInsects();
         initHandler();
@@ -208,7 +204,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                                         removeShot(s);
                                     }
                                 }
-                                //livesText.setText("" + spaceShip.getHealth());
                                 upDateLives();;
                             }
                         });
@@ -239,28 +234,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
             }
         }
     }
-//    private void checkIfInsectHit(Shot s){
-//        RectF r1 = s.getRect();
-//        for (int i=0; i<INSECTS_COLS ; i++){
-//            for (int j=0; j<INSECTS_ROWS ; j++){
-//                if(!insects[i][j].isDead()) {
-//                    RectF r2 = insects[i][j].getRect();
-//                    if (r1.intersect(r2)) {
-//                        insects[i][j].gotHit(s.getPower());
-//                        if (insects[i][j].isDead()) {
-//                            removeView(insects[i][j]);
-//                            spaceShip.getPowerFromInsect(insects[i][j].getType());
-//                            numOfInsects-=1;
-//                        }
-//                        if (numOfInsects==0){
-//                            winGame();
-//                        }
-//                        removeShot(s);
-//                    }
-//                }
-//            }
-//        }
-//    }
 
     private void winGame() {
         endGame();
@@ -417,13 +390,13 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     @Override
     protected void onStop() {
         super.onStop();
+        if(isStartAnimationDone){
+            insectShots.interrupt();
+            moveShots.interrupt();
+            insectShots = null;
+            moveShots = null;
+            unRegisterAccelerometer();
+        }
         isActivityPaused = true;
-        insectShots.interrupt();
-        moveShots.interrupt();
-        checkHitShots.interrupt();
-        checkHitShots = null;
-        insectShots = null;
-        moveShots = null;
-        unRegisterAccelerometer();
     }
 }

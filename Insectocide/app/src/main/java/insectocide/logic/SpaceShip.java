@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 public class SpaceShip extends SpaceEntity {
+    private final int MAX_HEALTH = 5;
     private static String lastMovement;
 
     public SpaceShip(String color, Context context , DisplayMetrics metrics) {
@@ -88,7 +89,8 @@ public class SpaceShip extends SpaceEntity {
     public void getPowerFromInsect(InsectType type) {
         switch(type){
             case ExtraHealth:
-                health+=1;
+                if (health <MAX_HEALTH)
+                    health+=1;
                 break;
             case PowerShoot:
                 firePower+=1;
