@@ -47,8 +47,8 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single_player_game);
-        shipShoots = new CopyOnWriteArrayList<Shot>();
-        insectsShoots = new CopyOnWriteArrayList<Shot>();
+        shipShoots = new CopyOnWriteArrayList<>();
+        insectsShoots = new CopyOnWriteArrayList<>();
         metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         rl = (RelativeLayout)findViewById(R.id.singlePlayerLayout);
