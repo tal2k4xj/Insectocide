@@ -23,6 +23,7 @@ public abstract class SpaceEntity extends ImageView {
     public SpaceEntity(Context context , DisplayMetrics metrics) {
         super(context);
         this.metrics = metrics;
+        health =0;
         setDrawingCacheEnabled(true);
     }
 
@@ -36,10 +37,7 @@ public abstract class SpaceEntity extends ImageView {
     }
 
     public boolean isDead(){
-        if (health <= 0){
-            return true;
-        }
-        return false;
+        return health <= 0;
     }
 
     public String getColor (){
@@ -66,5 +64,21 @@ public abstract class SpaceEntity extends ImageView {
     public RectF getRect(){
         RectF r = new RectF(getX(),getY(),(float)(getX()+width),(float)(getY()+height));
         return r;
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
+    public void setHealth(int health) {
+        this.health = health;
+    }
+
+    public int getMovementSpeed() {
+        return movementSpeed;
+    }
+
+    public void setMovementSpeed(int movementSpeed) {
+        this.movementSpeed = movementSpeed;
     }
 }

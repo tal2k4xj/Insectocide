@@ -67,11 +67,11 @@ public class SpaceShip extends SpaceEntity {
                     setX(getX()- (movementSpeed*3));
                 break;
             case "right2":
-                if (getX() < metrics.widthPixels-this.width)
+                if (getX() < metrics.widthPixels-width)
                     setX(getX()+ (movementSpeed*2));
                 break;
             case "right3":
-                if (getX() < metrics.widthPixels-this.width)
+                if (getX() < metrics.widthPixels-width)
                     setX(getX()+ (movementSpeed*3));
                 break;
             }

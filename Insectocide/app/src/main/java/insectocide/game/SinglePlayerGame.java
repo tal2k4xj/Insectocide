@@ -10,12 +10,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
+
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
-
 import insectocide.logic.Insect;
 import insectocide.logic.InsectType;
 import insectocide.logic.Shot;
@@ -27,6 +29,8 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     private final int INSECTS_COLS = 10;
     private final long SHOOT_DELAY = 1000;
     private final long START_ANIMATION_DELAY = 8000;
+    private int numOfInsects;
+    private int timeOfGame;
     private Sensor accelerometer;
     private SensorManager sm;
     private SpaceShip spaceShip;
@@ -42,6 +46,9 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     private Thread insectShots;
     private Thread moveShots;
     private Thread checkHitShots;
+    private Thread timer;
+    private TextView scoreText;
+    private TextView livesText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,10 +57,17 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         shipShoots = new CopyOnWriteArrayList<>();
         insectsShoots = new CopyOnWriteArrayList<>();
         metrics = new DisplayMetrics();
+        timeOfGame = 0;
+        numOfInsects = INSECTS_ROWS * INSECTS_COLS;
+        scoreText = (TextView) findViewById(R.id.ScoreText);
+        scoreText.setVisibility(View.INVISIBLE);
+        livesText = (TextView) findViewById(R.id.Lives);
+
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         rl = (RelativeLayout)findViewById(R.id.singlePlayerLayout);
 
         initShip();
+        livesText.setText("" + spaceShip.getHealth());
         initInsects();
         initHandler();
     }
@@ -66,6 +80,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                 initAccelerometer();
                 initMoveShotsThread();
                 startInsectsShotsThread();
+                startTimer();
                 ;
             }
         }, START_ANIMATION_DELAY);
@@ -126,14 +141,15 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                             @Override
                             public void run() {
                                 Random rand = new Random();
-                                int i = rand.nextInt(INSECTS_COLS);
-                                int j = rand.nextInt(INSECTS_ROWS);
-                                if(insects[i][j] != null) {
-                                    Shot s = insects[i][j].fire();
-                                    insectsShoots.add(s);
-                                    s.bringToFront();
-                                    rl.addView(s);
-                                }
+                                int i,j;
+                                do{
+                                    i = rand.nextInt(INSECTS_COLS);
+                                    j = rand.nextInt(INSECTS_ROWS);
+                                }while (insects[i][j].isDead());
+                                Shot s = insects[i][j].fire();
+                                insectsShoots.add(s);
+                                s.bringToFront();
+                                rl.addView(s);
                             }
                         });
                         Thread.sleep(1000);
@@ -170,6 +186,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                                         removeShot(s);
                                     }
                                 }
+                                livesText.setText(""+spaceShip.getHealth());
                             }
                         });
                         Thread.sleep(100);
@@ -186,14 +203,17 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         RectF r1 = s.getRect();
         for (int i=0; i<INSECTS_COLS ; i++){
             for (int j=0; j<INSECTS_ROWS ; j++){
-                if(insects[i][j]!=null) {
+                if(!insects[i][j].isDead()) {
                     RectF r2 = insects[i][j].getRect();
                     if (r1.intersect(r2)) {
                         insects[i][j].gotHit(s.getPower());
                         if (insects[i][j].isDead()) {
                             removeView(insects[i][j]);
                             spaceShip.getPowerFromInsect(insects[i][j].getType());
-                            insects[i][j] = null;
+                            numOfInsects-=1;
+                        }
+                        if (numOfInsects==0){
+                            winGame();
                         }
                         removeShot(s);
                     }
@@ -202,16 +222,62 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         }
     }
 
+    private void winGame() {
+        endGame();
+    }
+
+    private void endGame() {
+        int score = calcScore();
+        scoreText.setText("Score: " + score);
+        scoreText.setVisibility(View.VISIBLE);
+    }
+
+    private int calcScore() {
+        return (getNumOfKilledInsects()*10000)/(timeOfGame);
+    }
+
+    private int getNumOfKilledInsects() {
+        return (INSECTS_COLS*INSECTS_ROWS)-numOfInsects;
+    }
+
+    private void startTimer() {
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                while (!spaceShip.isDead()&& numOfInsects>0) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            timeOfGame++;
+                        }
+                    });
+                }
+            }
+        };
+        timer = new Thread(runnable);
+        timer.start();
+    }
     private void checkIfShipHit(Shot s){
         RectF r1 = s.getRect();
         RectF r2 = spaceShip.getRect();
         if (r1.intersect(r2)){
             spaceShip.gotHit(s.getPower());
             if(spaceShip.isDead()){
-                removeView(spaceShip);
+                loseGame();
             }
             removeShot(s);
         } // need to add blue ship for multiplayer
+    }
+
+    private void loseGame() {
+        endGame();
+        removeView(spaceShip);
     }
 
     private void removeShot(Shot s) {
@@ -242,14 +308,14 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
 
     private void moveShip(float curMovement) {
 
-        if (curMovement >1) {
-            if(curMovement>2.5){
+        if (curMovement >0.5) {
+            if(curMovement>2){
                 spaceShip.move("right3");
             }else {
                 spaceShip.move("right2");
             }
-        }else if(curMovement<-1){
-            if(curMovement<-2.5){
+        }else if(curMovement<-0.5){
+            if(curMovement<-2){
                 spaceShip.move("left3");
             }else {
                 spaceShip.move("left2");
@@ -263,7 +329,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
-
     public boolean onTouchEvent(MotionEvent event) {
         long time = event.getDownTime();
         if(isStartAnimationDone && time-lastShootTime > SHOOT_DELAY ) {
