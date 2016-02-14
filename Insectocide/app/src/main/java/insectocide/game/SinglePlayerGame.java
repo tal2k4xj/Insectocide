@@ -181,27 +181,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         });
         moveShots.start();
     }
-//
-//    private void checkIfShotHit() {
-//        checkHitShots = new Thread(new Runnable() {
-//            public void run() {
-//                try{
-//                    while (!isActivityPaused) {
-//                       for (Shot s : shipShoots) {
-//
-//                        }
-//                        for (Shot s : insectsShoots) {
-//
-//                        }
-//                    }
-//                    Thread.sleep(50);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
-//        checkHitShots.start();
-//    }
 
     private void checkIfInsectHit(Shot s){
         RectF r1 = s.getRect();
