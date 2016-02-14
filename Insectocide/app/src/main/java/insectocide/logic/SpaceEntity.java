@@ -62,7 +62,7 @@ public abstract class SpaceEntity extends ImageView {
         this.fireSpeed = fireSpeed;
     }
     public RectF getRect(){
-        RectF r = new RectF(getX(),getY(),(float)(getX()+width),(float)(getY()+height));
+        RectF r = new RectF(getX(),getY(),(float)(getX()+width),(float)(getY()+height*0.7));
         return r;
     }
 

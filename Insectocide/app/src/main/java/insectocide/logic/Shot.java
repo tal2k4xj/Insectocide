@@ -117,7 +117,7 @@ public class Shot extends ImageView {
         setVisibility(INVISIBLE);
     }
     public RectF getRect(){
-        RectF r = new RectF(getX(),getY(),(float)(getX()+width),(float)(getY()+height));
+        RectF r = new RectF(getX(),getY(),(float)(getX()+width),(float)(getY()+height*0.8));
         return r;
     }
 }
