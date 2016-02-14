@@ -6,11 +6,13 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -39,6 +41,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     private List<Shot> shipShoots;
     private List<Shot> insectsShoots;
     private List<Insect> liveInsects;
+    private List<ImageView> shipLives;
     private RelativeLayout rl;
     private long lastShootTime = 0;
     private boolean isActivityPaused = false;
@@ -57,17 +60,19 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         shipShoots = new CopyOnWriteArrayList<>();
         insectsShoots = new CopyOnWriteArrayList<>();
         liveInsects = new CopyOnWriteArrayList<>();
+        shipLives = new CopyOnWriteArrayList<>();
         metrics = new DisplayMetrics();
         timeOfGame = 0;
         scoreText = (TextView) findViewById(R.id.ScoreText);
         scoreText.setVisibility(View.INVISIBLE);
-        livesText = (TextView) findViewById(R.id.Lives);
+        //livesText = (TextView) findViewById(R.id.Lives);
 
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         rl = (RelativeLayout)findViewById(R.id.singlePlayerLayout);
 
         initShip();
-        livesText.setText("" + spaceShip.getHealth());
+        //livesText.setText("" + spaceShip.getHealth());
+        upDateLives();
         initInsects();
         initHandler();
     }
@@ -203,7 +208,8 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                                         removeShot(s);
                                     }
                                 }
-                                livesText.setText("" + spaceShip.getHealth());
+                                //livesText.setText("" + spaceShip.getHealth());
+                                upDateLives();;
                             }
                         });
                         Thread.sleep(100);
@@ -322,7 +328,40 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
             shipShoots.remove(s);
         }else
             insectsShoots.remove(s);
+    }
 
+    private void upDateLives(){
+        if (shipLives.size() > spaceShip.getHealth()){
+            removeShipLive();
+        }else if (shipLives.size() < spaceShip.getHealth()){
+            drawShipLive();
+        }
+    }
+
+    private void drawShipLive(){
+        for (int i=shipLives.size(); i<spaceShip.getHealth() ; i++){
+            ImageView live = new ImageView(this);
+            live.setBackgroundResource(R.drawable.live);
+            double length = metrics.heightPixels*0.1;
+            live.setLayoutParams(new ViewGroup.LayoutParams((int) length, (int) length));
+            live.setY(0);
+            double x = i*length;
+            live.setX((float) x);
+            live.bringToFront();
+            live.setVisibility(View.VISIBLE);
+            rl.addView(live);
+            shipLives.add(live);
+        }
+    }
+
+    private void removeShipLive(){
+        for (int i=spaceShip.getHealth(); i<shipLives.size() ; i++){
+            ImageView live = new ImageView(this);
+            live = shipLives.get(i);
+            live.setVisibility(View.VISIBLE);
+            rl.removeView(live);
+            shipLives.remove(live);
+        }
     }
 
     private void removeView(final ImageView v){
@@ -332,7 +371,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                 rl.removeView(v);
             }
         });
-
     }
 
     @Override
