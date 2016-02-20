@@ -17,5 +17,14 @@
         android:text="Score"
         android:layout_centerHorizontal="true"/>
 
+    <ImageButton
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:id="@+id/pauseButton"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:background="@drawable/pause"
+        android:visibility="visible"/>
+
 
 </RelativeLayout>

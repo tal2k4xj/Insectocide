@@ -33,7 +33,12 @@ public abstract class SpaceEntity extends ImageView {
     }
 
     public void gotHit(int power){
-        health = health-power;
+        if (health > 0) {
+            if (health - power < 0)
+                health = health - 1;
+            else
+                health = health - power;
+        }
     }
 
     public boolean isDead(){
