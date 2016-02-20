@@ -8,17 +8,18 @@
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/WifiButton"
-        android:background="@drawable/wifibutton"
-        android:layout_above="@+id/BluetoothButton"
-        android:layout_centerHorizontal="true" />
+        android:id="@+id/CreateRoomButton"
+        android:background="@drawable/createroombutton"
+        android:layout_centerVertical="true"
+        android:layout_alignStart="@+id/FindRoomButton" />
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/BluetoothButton"
-        android:background="@drawable/bluetoothbutton"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
+        android:id="@+id/FindRoomButton"
+        android:background="@drawable/findroombutton"
+        android:layout_below="@+id/CreateRoomButton"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="50dp" />
 
     <ImageView
         android:layout_width="100dp"
