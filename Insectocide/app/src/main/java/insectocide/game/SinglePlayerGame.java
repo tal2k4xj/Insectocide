@@ -12,6 +12,7 @@ import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -25,11 +26,11 @@ import insectocide.logic.Player;
 import insectocide.logic.Shot;
 import insectocide.logic.SpaceShip;
 
-public class SinglePlayerGame extends Activity implements SensorEventListener {
+public class SinglePlayerGame extends Activity implements SensorEventListener,View.OnClickListener {
     private final String DEFAULT_COLOR = "red";
     private final int INSECTS_ROWS = 3;
     private final int INSECTS_COLS = 10;
-    private final long SHOOT_DELAY = 1000;
+    private final long SHOOT_DELAY = 800;
     private final long START_ANIMATION_DELAY = 7200;
     private int timeOfGame;
     private Sensor accelerometer;
@@ -51,6 +52,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     private Thread moveShots;
     private Thread timer;
     private TextView scoreText;
+    private ImageButton pauseButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,8 +64,11 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         shipLives = new CopyOnWriteArrayList<>();
         metrics = new DisplayMetrics();
         timeOfGame = 0;
+
         scoreText = (TextView) findViewById(R.id.ScoreText);
         scoreText.setVisibility(View.INVISIBLE);
+        pauseButton = (ImageButton) findViewById(R.id.pauseButton);
+        pauseButton.setOnClickListener(this);
 
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         rl = (RelativeLayout)findViewById(R.id.singlePlayerLayout);
@@ -72,6 +77,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         updateLives();
         initInsects();
         initHandler();
+        initReadyGo();
     }
 
     private void initHandler() {
@@ -83,7 +89,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
                 initMoveShotsThread();
                 startInsectsShotsThread();
                 startTimer();
-                ;
             }
         }, START_ANIMATION_DELAY);
     }
@@ -91,12 +96,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     @Override
     protected void onStart(){
         super.onStart();
-        if (isActivityPaused){
-            isActivityPaused = false;
-            initAccelerometer();
-            initMoveShotsThread();
-            startInsectsShotsThread();
-        }
+        resumePauseGame();
     }
 
     private void initPlayerShip(){
@@ -133,6 +133,40 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
 
     private void unRegisterAccelerometer(){
         sm.unregisterListener(this, accelerometer);
+    }
+
+    public void initReadyGo(){
+        readyGo("ready");
+        handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                readyGo("go");
+            }
+        }, 3500);
+    }
+
+    public void readyGo(String image){
+        final ImageView readyGo = new ImageView(this);
+        int drawableId = getResources().getIdentifier(image, "drawable", "insectocide.game");
+        readyGo.setBackgroundResource(drawableId);
+        final double width = metrics.heightPixels*0.3*2;
+        double height = metrics.heightPixels*0.3;
+        readyGo.setLayoutParams(new ViewGroup.LayoutParams((int) width, (int) height));
+        double y = metrics.heightPixels*0.35;
+        readyGo.setY((float) y);
+        readyGo.setX((float) (-width));
+        readyGo.bringToFront();
+        readyGo.setVisibility(View.VISIBLE);
+        rl.addView(readyGo);
+        readyGo.animate().x((float) (readyGo.getX() + metrics.widthPixels * 0.5 + width / 2));
+        readyGo.animate().setDuration(500);
+        handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                readyGo.animate().x((float) (readyGo.getX() + metrics.widthPixels * 0.5 + width / 2));
+                readyGo.animate().setDuration(500);
+            }
+        }, 2500);
     }
 
     private synchronized void startInsectsShotsThread(){
@@ -216,6 +250,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         });
         moveShots.start();
     }
+
     private void checkIfInsectHit(Shot shot){
         RectF r1 = shot.getRect();
         for(Insect insect:liveInsects){
@@ -257,7 +292,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         handler.postDelayed(new Runnable() {
             public void run() {
                 bonus.setVisibility(View.INVISIBLE);
-                ;
             }
         }, 2500);
     }
@@ -322,6 +356,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
             spaceShip.gotHit(s.getPower());
             spaceShip.reducePowers();
             if(spaceShip.isDead()){
+                spaceShip.die();
                 loseGame();
             }
             removeShot(s);
@@ -330,6 +365,13 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
 
     private void loseGame() {
         endGame();
+        resumePauseGame();
+        handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                removeView(spaceShip);
+            }
+        }, 700);
     }
 
     private void removeShot(Shot s) {
@@ -366,7 +408,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     }
 
     private void removeShipLive(){
-
         for (int i=(int)spaceShip.getHealth(); i<shipLives.size() ; i++){
             ImageView live = shipLives.get(i);
             live.setVisibility(View.INVISIBLE);
@@ -457,16 +498,35 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         return false;
     }
 
+    public void resumePauseGame (){
+        if(isStartAnimationDone && !isActivityPaused){
+            insectShots.interrupt();
+            moveShots.interrupt();
+            timer.interrupt();
+            insectShots = null;
+            moveShots = null;
+            timer =null;
+            unRegisterAccelerometer();
+            isActivityPaused = true;
+        }else if (isStartAnimationDone && isActivityPaused) {
+            isActivityPaused = false;
+            initAccelerometer();
+            initMoveShotsThread();
+            startInsectsShotsThread();
+            startTimer();
+        }
+    }
+
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.pauseButton:
+                resumePauseGame();
+        }
+    }
+
     @Override
     protected void onStop() {
         super.onStop();
-        if(isStartAnimationDone){
-            insectShots.interrupt();
-            moveShots.interrupt();
-            insectShots = null;
-            moveShots = null;
-            unRegisterAccelerometer();
-        }
-        isActivityPaused = true;
+        resumePauseGame();
     }
 }

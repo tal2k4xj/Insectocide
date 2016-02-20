@@ -105,20 +105,27 @@ public class SpaceShip extends SpaceEntity {
     }
 
     public void reducePowers() {
-        if (movementSpeed==1.5){
-            movementSpeed=1;
-        } else if (movementSpeed>1.5){
-                movementSpeed-=1;
+        if (movementSpeed == 1.5) {
+            movementSpeed = 1;
+        } else if (movementSpeed > 1.5) {
+            movementSpeed -= 1;
         }
-        if (firePower==1.5){
-             firePower=1;
-        } else if (firePower>1.5) {
-            firePower -=1;
+        if (firePower == 1.5) {
+            firePower = 1;
+        } else if (firePower > 1.5) {
+            firePower -= 1;
         }
-        if (fireSpeed==1.5){
-            fireSpeed=1;
-        } else if (fireSpeed>1.5) {
-            fireSpeed -=1;
+        if (fireSpeed == 1.5) {
+            fireSpeed = 1;
+        } else if (fireSpeed > 1.5) {
+            fireSpeed -= 1;
         }
+    }
+
+    public void die(){
+        int drawableId = getResources().getIdentifier("ship_exp_animation" , "drawable", "insectocide.game");
+        this.setBackgroundResource(drawableId);
+        animation = (AnimationDrawable)this.getBackground();
+        animation.start();
     }
 }
