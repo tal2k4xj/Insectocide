@@ -8,6 +8,9 @@ import android.view.ViewGroup;
 
 public class SpaceShip extends SpaceEntity {
     private final int MAX_HEALTH = 5;
+    private final int MAX_FIRE_POWER = 2;
+    private final int MAX_FIRE_SPEED = 4;
+    private final int MAX_MOVEMENT_SPEED = 4;
     private static String lastMovement;
 
     public SpaceShip(String color, Context context , DisplayMetrics metrics) {
@@ -93,13 +96,16 @@ public class SpaceShip extends SpaceEntity {
                     health+=1;
                 break;
             case PowerShoot:
+                if (firePower <MAX_FIRE_POWER)
                 firePower+=1;
                 break;
             case SpeedyShoot:
-                fireSpeed+=1;
+                if (fireSpeed <MAX_FIRE_SPEED)
+                    fireSpeed+=1;
                 break;
             case DoubleShoot:
-                movementSpeed+=1;
+                if (movementSpeed <MAX_MOVEMENT_SPEED)
+                    movementSpeed+=1;
                 break;
         }
     }
@@ -118,5 +124,19 @@ public class SpaceShip extends SpaceEntity {
         this.setBackgroundResource(drawableId);
         animation = (AnimationDrawable)this.getBackground();
         animation.start();
+    }
+
+    public void win(){
+        int drawableId = getResources().getIdentifier(color.toLowerCase()+"_ship_win_animation" , "drawable", "insectocide.game");
+        this.setBackgroundResource(drawableId);
+        animation = (AnimationDrawable)this.getBackground();
+        animation.start();
+        if (color == "red") {
+            animate().y(getY() - metrics.heightPixels);
+        }else if (color == "blue") {
+            animate().y(getY() + metrics.heightPixels);
+        }
+        animate().setDuration(2000);
+        animate().start();
     }
 }

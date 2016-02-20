@@ -217,30 +217,35 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         moveShots = new Thread(new Runnable() {
             public void run() {
                 while (!isActivityPaused) {
-                    try {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                for (Shot s : insectsShoots) {
-                                    if(!s.isOutOfScreen()) {
+                    try{
+                        for (final Shot s : insectsShoots) {
+                            if(!s.isOutOfScreen()) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
                                         s.shoot();
-                                        checkIfShipHit(s);
-                                    }else{
-                                        removeShot(s);
                                     }
-                                }
-                                for (Shot s : shipShoots) {
-                                    if(!s.isOutOfScreen()) {
-                                        s.shoot();
-                                        checkIfInsectHit(s);
-                                    }else{
-                                        removeShot(s);
-                                    }
-                                }
-                                upDateLives();
+                                });
+                                checkIfShipHit(s);
+                            }else{
+                                removeShot(s);
                             }
-                        });
-                        Thread.sleep(100);
+                        }
+                        for (final Shot s : shipShoots) {
+                            if(!s.isOutOfScreen()) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        s.shoot();
+                                    }
+                                });
+                                checkIfInsectHit(s);
+                            }else{
+                                removeShot(s);
+                            }
+                        }
+                        upDateLives();
+                        Thread.sleep(50);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -252,14 +257,19 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
 
     private void checkIfInsectHit(Shot shot){
         RectF r1 = shot.getRect();
-        for(Insect insect:liveInsects){
+        for(final Insect insect:liveInsects){
             RectF r2 = insect.getRect();
             if (r1.intersect(r2)) {
                 insect.gotHit(shot.getPower());
                 if (insect.isDead()) {
-                    insect.die();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            insect.die();
+                            showInsectBonus(insect);
+                        }
+                    });
                     spaceShip.getPowerFromInsect(insect.getType());
-                    showInsectBonus(insect);
                     liveInsects.remove(insect);
                     //removeView(insect);
                 }
@@ -293,7 +303,14 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     }
 
     private void winGame() {
-        endGame();
+        resumePauseGame();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                spaceShip.win();
+                endGame();
+            }
+        });
     }
 
     private void endGame() {
@@ -340,7 +357,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             spaceShip.gotHit(s.getPower());
             spaceShip.resetPowers();
             if(spaceShip.isDead()){
-                spaceShip.die();
                 loseGame();
             }
             removeShot(s);
@@ -348,19 +364,19 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     }
 
     private void loseGame() {
-        endGame();
-        resumePauseGame();
-        handler = new Handler();
-        handler.postDelayed(new Runnable() {
+        runOnUiThread(new Runnable() {
+            @Override
             public void run() {
-                removeView(spaceShip);
+                spaceShip.die();
+                endGame();
             }
-        }, 700);
+        });
+        resumePauseGame();
     }
 
     private void removeShot(Shot s) {
         removeView(s);
-        s.destroy();
+        //s.destroy();
         if (s.getEntity() instanceof SpaceShip){
             shipShoots.remove(s);
         }else
@@ -377,7 +393,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
 
     private void drawShipLive(){
         for (int i=shipLives.size(); i<spaceShip.getHealth() ; i++){
-            ImageView live = new ImageView(this);
+            final ImageView live = new ImageView(this);
             live.setBackgroundResource(R.drawable.live);
             double length = metrics.heightPixels*0.1;
             live.setLayoutParams(new ViewGroup.LayoutParams((int) length, (int) length));
@@ -386,16 +402,26 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             live.setX((float) x);
             live.bringToFront();
             live.setVisibility(View.VISIBLE);
-            rl.addView(live);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    rl.addView(live);
+                }
+            });
             shipLives.add(live);
         }
     }
 
     private void removeShipLive(){
         for (int i=spaceShip.getHealth(); i<shipLives.size() ; i++){
-            ImageView live = shipLives.get(i);
-            live.setVisibility(View.VISIBLE);
-            rl.removeView(live);
+            final ImageView live = shipLives.get(i);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    live.setVisibility(View.VISIBLE);
+                    rl.removeView(live);
+                }
+            });
             shipLives.remove(live);
         }
     }
