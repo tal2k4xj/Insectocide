@@ -21,6 +21,7 @@ import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 import insectocide.logic.Insect;
 import insectocide.logic.InsectType;
+import insectocide.logic.Player;
 import insectocide.logic.Shot;
 import insectocide.logic.SpaceShip;
 
@@ -33,6 +34,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
     private int timeOfGame;
     private Sensor accelerometer;
     private SensorManager sm;
+    private Player p1;
     private SpaceShip spaceShip;
     private DisplayMetrics metrics;
     private Insect insects[][];
@@ -66,7 +68,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         rl = (RelativeLayout)findViewById(R.id.singlePlayerLayout);
 
-        initShip();
+        initPlayerShip();
         updateLives();
         initInsects();
         initHandler();
@@ -97,8 +99,9 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
         }
     }
 
-    private void initShip(){
+    private void initPlayerShip(){
         spaceShip = new SpaceShip(DEFAULT_COLOR, this , metrics);
+        p1 = new Player(spaceShip);
         spaceShip.bringToFront();
         rl.addView(spaceShip);
     }
@@ -265,6 +268,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener {
 
     private void endGame() {
         int score = calcScore();
+        p1.setScore(score);
         scoreText.setText("Score: " + score);
         scoreText.setVisibility(View.VISIBLE);
         insectShots.interrupt();
