@@ -25,6 +25,7 @@ import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 import insectocide.logic.Insect;
 import insectocide.logic.InsectType;
+import insectocide.logic.InsectsProvider;
 import insectocide.logic.Shot;
 import insectocide.logic.SpaceShip;
 
@@ -62,9 +63,8 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         setContentView(R.layout.activity_single_player_game);
         shipShoots = new CopyOnWriteArrayList<>();
         insectsShoots = new CopyOnWriteArrayList<>();
-        liveInsects = new CopyOnWriteArrayList<>();
         shipLives = new CopyOnWriteArrayList<>();
-        metrics = new DisplayMetrics();
+
         startDelayHandler = new Handler();
         timeOfGame = 0;
 
@@ -72,7 +72,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         scoreText.setVisibility(View.INVISIBLE);
         pauseButton = (ImageButton) findViewById(R.id.pauseButton);
         pauseButton.setOnClickListener(this);
-
+        metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         rl = (RelativeLayout)findViewById(R.id.singlePlayerLayout);
 
@@ -108,38 +108,14 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     }
 
     private void initInsects(){
-        CreateInsectTypes();
-        insects = new Insect[INSECTS_COLS][INSECTS_ROWS];
-        for (int i=0 ; i < INSECTS_COLS ; i++){
-            for(int j=0 ; j < INSECTS_ROWS ; j++){
-                insects[i][j] = new Insect(pickRandomTypeFromList(),this,this.metrics);
-                insects[i][j].setPositionAndDimensions(i,j);
-                insects[i][j].bringToFront();
-                liveInsects.add(insects[i][j]);
-                rl.addView(insects[i][j]);
-            }
+        InsectsProvider insectsProvider = new InsectsProvider(INSECTS_ROWS, INSECTS_COLS, this, metrics);
+        liveInsects = insectsProvider.getLiveInsectsList();
+        insects = insectsProvider.getInsectMatrix();
+        for (Insect insect: liveInsects) {
+            rl.addView(insect);
         }
     }
-    public void CreateInsectTypes(){
-        insectTypes = new LinkedList<>();
-        int numOfRegular = (INSECTS_COLS*INSECTS_ROWS)/2;
-        for (int i= 0 ; i<=numOfRegular;i++){
-            insectTypes.add(InsectType.Normal);
-        }
-        int j=1;
-        while(insectTypes.size()<=INSECTS_ROWS*INSECTS_COLS){
-            insectTypes.add(InsectType.values()[j]);
-            j+=1;
-            if (j==InsectType.values().length){
-                j=1;
-            }
-        }
-    }
-    public InsectType pickRandomTypeFromList(){
-        Random rand = new Random();
-        int n = rand.nextInt(insectTypes.size());
-        return insectTypes.remove(n);
-    }
+
 
     private void initAccelerometer() {
         sm=(SensorManager)getSystemService(SENSOR_SERVICE);

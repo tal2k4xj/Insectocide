@@ -2,6 +2,7 @@ package insectocide.logic;
 
 import android.content.Context;
 import android.util.DisplayMetrics;
+import android.widget.RelativeLayout;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -18,16 +19,18 @@ public class InsectsProvider {
     private int rows,cols;
     private Context context;
     private DisplayMetrics metrics;
+    Random rand;
 
     public InsectsProvider(int rows, int cols, Context context, DisplayMetrics metrics) {
         this.rows=rows;
         this.cols=cols;
         this.context = context;
         this.metrics = metrics;
-        insects = new Insect[rows][cols];
-        generateInsects();
+        insects = new Insect[cols][rows];
         liveInsects = new CopyOnWriteArrayList<>();
         insectTypes = new LinkedList<>();
+        rand = new Random();
+        generateInsects();
     }
 
     private Insect[][] generateInsects(){
@@ -46,11 +49,11 @@ public class InsectsProvider {
     }
     private void CreateInsectTypes(){
         int numOfRegular = (cols*rows)/2;
-        for (int i= 0 ; i<=numOfRegular;i++){
+        for (int i= 0 ; i<numOfRegular;i++){
             insectTypes.add(InsectType.Normal);
         }
         int j=1;
-        while(insectTypes.size()<=rows*cols){
+        while(insectTypes.size()<rows*cols){
             insectTypes.add(InsectType.values()[j]);
             j+=1;
             if (j==InsectType.values().length){
@@ -59,7 +62,6 @@ public class InsectsProvider {
         }
     }
     private InsectType pickRandomTypeFromList(){
-        Random rand = new Random();
         int n = rand.nextInt(insectTypes.size());
         return insectTypes.remove(n);
     }
