@@ -1,6 +1,10 @@
 package insectocide.game;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.graphics.RectF;
 import android.hardware.Sensor;
@@ -9,14 +13,17 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.InputType;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -26,6 +33,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import insectocide.logic.Insect;
 import insectocide.logic.InsectType;
 import insectocide.logic.InsectsProvider;
+import insectocide.logic.Player;
 import insectocide.logic.Shot;
 import insectocide.logic.SpaceShip;
 
@@ -55,8 +63,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     private Thread timer;
     private TextView scoreText;
     private ImageButton pauseButton;
-    private List<InsectType> insectTypes;
-
+    private String playerName;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,7 +74,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
 
         startDelayHandler = new Handler();
         timeOfGame = 0;
-
+        playerName ="";
         scoreText = (TextView) findViewById(R.id.ScoreText);
         scoreText.setVisibility(View.INVISIBLE);
         pauseButton = (ImageButton) findViewById(R.id.pauseButton);
@@ -190,15 +197,15 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             private int calculateInsectShootingTime() {
                 int numOfInsects = liveInsects.size();
                 if (numOfInsects>=25){
-                    return 500;
+                    return 400;
                 }else if(numOfInsects>=20){
-                    return 850;
+                    return 750;
                 }else if(numOfInsects>=15){
-                    return 1300;
+                    return 1200;
                 }else if(numOfInsects>=10){
-                    return 1750;
+                    return 1500;
                 }else {
-                    return 2200;
+                    return 2000;
                 }
             }
         });
@@ -311,6 +318,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         int score = calcScore();
         scoreText.setText("Score: " + score);
         scoreText.setVisibility(View.VISIBLE);
+        updateScoreBoard();
     }
 
     private int calcScore() {
@@ -354,7 +362,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
                 loseGame();
             }
             removeShot(s);
-        } // need to add blue ship for multiplayer
+        }
     }
 
     private void loseGame() {
@@ -494,5 +502,35 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     protected void onStop() {
         super.onStop();
         resumePauseGame();
+    }
+    private void updateScoreBoard() {
+        popUpPlayerNameInput();
+    }
+    public void saveScoreBoard(Player p){
+        SharedPreferences settings = getSharedPreferences("ScoreBoard", Context.MODE_APPEND);
+        String board = settings.getString("score_board", "");
+        board = board.concat(p.toSaveString());
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString("score_board", board);
+        editor.commit();
+    }
+    public void popUpPlayerNameInput(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("You Set a New Record!\nPlease Enter Your Name:");
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                playerName = input.getText().toString();
+                if (playerName.trim().isEmpty()) {
+                    Toast.makeText(getApplicationContext(), "Name Can Not Be Empty. Score Will Not Save", Toast.LENGTH_SHORT).show();
+                }
+                Player p = new Player(playerName, calcScore());
+                saveScoreBoard(p);
+            }
+        });
+        builder.show();
     }
 }
