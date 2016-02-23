@@ -9,8 +9,8 @@ import android.widget.ImageView;
 
 public class Shot extends ImageView {
 
-    private int power;
-    private int speed;
+    private double power;
+    private double speed;
     private double width;
     private double height;
     protected double y;
@@ -91,20 +91,20 @@ public class Shot extends ImageView {
     public void shoot(){
         if (entity instanceof SpaceShip){
             if(entity.getColor().equals("red")){
-                setY(getY() - (speed * 10));
+                setY(getY() - (float)(speed * 10));
             }else if(entity.getColor().equals("blue")){
-                setY(getY() + (speed * 10));
+                setY(getY() + (float)(speed * 10));
             }
         }else if (entity instanceof Insect){
             if(((Insect) entity).getShootDirection().equals("up")){
-                setY(getY() - (speed * 7));
+                setY(getY() - (float)(speed * 7));
             }else if (((Insect) entity).getShootDirection().equals("down")){
-                setY(getY() + (speed * 7));
+                setY(getY() + (float)(speed * 7));
             }
         }
     }
 
-    public int getPower() {
+    public double getPower() {
         return power;
     }
 

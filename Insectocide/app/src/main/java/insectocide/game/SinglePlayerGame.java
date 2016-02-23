@@ -414,12 +414,12 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     }
 
     private void removeShipLive(){
-        for (int i=spaceShip.getHealth(); i<shipLives.size() ; i++){
+        for (int i=(int)spaceShip.getHealth(); i<shipLives.size() ; i++){
             final ImageView live = shipLives.get(i);
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    live.setVisibility(View.VISIBLE);
+                    live.setVisibility(View.INVISIBLE);
                     rl.removeView(live);
                 }
             });
