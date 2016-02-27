@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.content.res.TypedArray;
 import android.graphics.RectF;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -26,13 +25,12 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
 import insectocide.logic.Insect;
-import insectocide.logic.InsectType;
 import insectocide.logic.InsectsProvider;
 import insectocide.logic.Player;
 import insectocide.logic.Shot;
@@ -51,6 +49,9 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     private DisplayMetrics metrics;
     private Insect insects[][];
     private Handler startDelayHandler;
+    private Handler BonusHandler;
+    private Handler endGameHandler;
+    private Handler timerHandler;
     private List<Shot> shipShoots;
     private List<Shot> insectsShoots;
     private List<Insect> liveInsects;
@@ -73,8 +74,10 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         shipShoots = new CopyOnWriteArrayList<>();
         insectsShoots = new CopyOnWriteArrayList<>();
         shipLives = new CopyOnWriteArrayList<>();
-
+        BonusHandler = new Handler();
         startDelayHandler = new Handler();
+        timerHandler = new Handler();
+        endGameHandler = new Handler();
         timeOfGame = 0;
         playerName ="";
         scoreText = (TextView) findViewById(R.id.ScoreText);
@@ -88,11 +91,11 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         initShip();
         updateLives();
         initInsects();
-        initHandler();
+        initStartHandler();
         initReadyGo();
     }
 
-    private void initHandler() {
+    private void initStartHandler() {
         startDelayHandler.postDelayed(new Runnable() {
             public void run() {
                 isStartAnimationDone = true;
@@ -138,7 +141,8 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
 
     public void initReadyGo(){
         readyGo("ready");
-        startDelayHandler.postDelayed(new Runnable() {
+        Handler readyGoHandler = new Handler();
+        readyGoHandler.postDelayed(new Runnable() {
             public void run() {
                 readyGo("go");
             }
@@ -160,7 +164,8 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         rl.addView(readyGo);
         readyGo.animate().x((float) (readyGo.getX() + metrics.widthPixels * 0.5 + width / 2));
         readyGo.animate().setDuration(500);
-        startDelayHandler.postDelayed(new Runnable() {
+        new Timer().schedule(new TimerTask() {
+            @Override
             public void run() {
                 readyGo.animate().x((float) (readyGo.getX() + metrics.widthPixels * 0.5 + width / 2));
                 readyGo.animate().setDuration(500);
@@ -295,7 +300,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         rl.addView(bonus);
         bonus.animate().y(bonus.getY() - 100);
         bonus.animate().setDuration(3000);
-        startDelayHandler.postDelayed(new Runnable() {
+        BonusHandler.postDelayed(new Runnable() {
             public void run() {
                 bonus.setVisibility(View.INVISIBLE);
             }
@@ -307,7 +312,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                startDelayHandler.postDelayed(new Runnable() {
+                endGameHandler.postDelayed(new Runnable() {
                     public void run() {
                         spaceShip.win();
                     }
@@ -353,7 +358,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
                         e.printStackTrace();
                     }
 
-                    startDelayHandler.post(new Runnable() {
+                    timerHandler.post(new Runnable() {
                         @Override
                         public void run() {
                             timeOfGame++;
