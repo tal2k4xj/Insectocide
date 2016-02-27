@@ -5,6 +5,15 @@
     android:background="@drawable/mainmenubackground"
     tools:context="insectocide.game.MultiplayerMenu">
 
+    <ImageView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/imageView"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:background="@drawable/listbackground"
+        android:layout_toStartOf="@+id/FindOpponentButton" />
+
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -28,7 +37,6 @@
         android:layout_alignParentStart="true"
         android:layout_toStartOf="@+id/FindOpponentButton"
         android:layout_alignParentTop="true"
-        android:padding="50dp"
-        android:background="@drawable/listbackground"/>
+        android:padding="50dp" />
 
 </RelativeLayout>

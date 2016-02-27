@@ -11,21 +11,15 @@
         android:layout_height="wrap_content"
         android:id="@+id/newGameButton"
         android:background="@drawable/newgamebutton"
-        android:layout_above="@+id/continueGameButton"
+        android:layout_below="@+id/logo1"
         android:layout_centerHorizontal="true" />
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/continueGameButton"
-        android:background="@drawable/continuebutton"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
+
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/scoreBoardButton"
         android:background="@drawable/scoreboardbutton"
-        android:layout_below="@+id/continueGameButton"
+        android:layout_below="@+id/newGameButton"
         android:layout_centerHorizontal="true" />
 
     <ImageView
