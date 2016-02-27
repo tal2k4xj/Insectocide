@@ -27,8 +27,6 @@ import android.widget.Toast;
 
 import java.util.List;
 import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
 import insectocide.logic.Insect;
 import insectocide.logic.InsectsProvider;
@@ -48,9 +46,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     private SpaceShip spaceShip;
     private DisplayMetrics metrics;
     private Insect insects[][];
-    private Handler startDelayHandler;
-    private Handler BonusHandler;
-    private Handler endGameHandler;
     private Handler timerHandler;
     private List<Shot> shipShoots;
     private List<Shot> insectsShoots;
@@ -74,10 +69,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         shipShoots = new CopyOnWriteArrayList<>();
         insectsShoots = new CopyOnWriteArrayList<>();
         shipLives = new CopyOnWriteArrayList<>();
-        BonusHandler = new Handler();
-        startDelayHandler = new Handler();
         timerHandler = new Handler();
-        endGameHandler = new Handler();
         timeOfGame = 0;
         playerName ="";
         scoreText = (TextView) findViewById(R.id.ScoreText);
@@ -91,12 +83,12 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         initShip();
         updateLives();
         initInsects();
-        initStartHandler();
-        initReadyGo();
+        startReadyGoAnimation();
+        initWithRestWithStartDelay();
     }
 
-    private void initStartHandler() {
-        startDelayHandler.postDelayed(new Runnable() {
+    private void initWithRestWithStartDelay() {
+        new Handler().postDelayed(new Runnable() {
             public void run() {
                 isStartAnimationDone = true;
                 initAccelerometer();
@@ -139,10 +131,9 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         sm.unregisterListener(this, accelerometer);
     }
 
-    public void initReadyGo(){
+    public void startReadyGoAnimation(){
         readyGo("ready");
-        Handler readyGoHandler = new Handler();
-        readyGoHandler.postDelayed(new Runnable() {
+        new Handler().postDelayed(new Runnable() {
             public void run() {
                 readyGo("go");
             }
@@ -164,7 +155,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         rl.addView(readyGo);
         readyGo.animate().x((float) (readyGo.getX() + metrics.widthPixels * 0.5 + width / 2));
         readyGo.animate().setDuration(500);
-        new Timer().schedule(new TimerTask() {
+        new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 readyGo.animate().x((float) (readyGo.getX() + metrics.widthPixels * 0.5 + width / 2));
@@ -179,12 +170,8 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
                 while (!isActivityPaused) {
                     try {
                         Random rand = new Random();
-                        int i, j;
-                        do {
-                            i = rand.nextInt(INSECTS_COLS);
-                            j = rand.nextInt(INSECTS_ROWS);
-                        } while (insects[i][j].isDead());
-                        final Insect insect = insects[i][j];
+                        int i = rand.nextInt(liveInsects.size());
+                        final Insect insect = liveInsects.get(i);
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -300,9 +287,9 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         rl.addView(bonus);
         bonus.animate().y(bonus.getY() - 100);
         bonus.animate().setDuration(3000);
-        BonusHandler.postDelayed(new Runnable() {
+        new Handler().postDelayed(new Runnable() {
             public void run() {
-                bonus.setVisibility(View.INVISIBLE);
+                rl.removeView(bonus);
             }
         }, 3000);
     }
@@ -311,7 +298,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                endGameHandler.postDelayed(new Runnable() {
+                new Handler().postDelayed(new Runnable() {
                     public void run() {
                         spaceShip.win();
                     }
@@ -426,7 +413,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    live.setVisibility(View.INVISIBLE);
                     rl.removeView(live);
                 }
             });
