@@ -308,7 +308,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     }
 
     private void winGame() {
-        resumePauseGame();
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -326,17 +325,8 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         int score = calcScore();
         scoreText.setText("Score: " + score);
         scoreText.setVisibility(View.VISIBLE);
-        destroyThreads();
+        resumePauseGame();
         updateScoreBoard();
-    }
-
-    private void destroyThreads(){
-        insectShots.interrupt();
-        moveShots.interrupt();
-        timer.interrupt();
-        insectShots = null;
-        moveShots = null;
-        timer = null;
     }
 
     private int calcScore() {
@@ -391,7 +381,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
                 endGame();
             }
         });
-        resumePauseGame();
     }
 
     private void removeShot(Shot s) {
