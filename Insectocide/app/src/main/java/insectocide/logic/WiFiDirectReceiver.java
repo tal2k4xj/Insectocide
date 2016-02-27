@@ -55,8 +55,6 @@ public class WiFiDirectReceiver extends BroadcastReceiver implements WifiP2pMana
 
     private void handleWifiP2pThisDeviceChanged(Intent intent){
         WifiP2pDevice thisDevice = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
-
-
     }
 
     private void handleWifiP2pPeersChanged(Intent intent){

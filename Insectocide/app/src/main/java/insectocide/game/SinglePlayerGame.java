@@ -170,28 +170,25 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     private synchronized void startInsectsShotsThread(){
         insectShots = new Thread(new Runnable() {
             public void run() {
-                while (!isActivityPaused) {
+                while (!isActivityPaused && !liveInsects.isEmpty()) {
                     try {
                         Random rand = new Random();
-                        if(!liveInsects.isEmpty()) {
-                            int i = rand.nextInt(liveInsects.size());
-                            final Insect insect = liveInsects.get(i);
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Shot s = insect.fire();
-                                    s.bringToFront();
-                                    rl.addView(s);
-                                    insectsShoots.add(s);
-                                }
-                            });
-                            int timeToSleep = calculateInsectShootingTime();
-                            Thread.sleep(timeToSleep);
-                        }
+                        int i = rand.nextInt(liveInsects.size());
+                        final Insect insect = liveInsects.get(i);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Shot s = insect.fire();
+                                s.bringToFront();
+                                rl.addView(s);
+                                insectsShoots.add(s);
+                            }
+                        });
+                        int timeToSleep = calculateInsectShootingTime();
+                        Thread.sleep(timeToSleep);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-
                 }
             }
 
@@ -318,7 +315,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         int score = calcScore();
         scoreText.setText("Score: " + score);
         scoreText.setVisibility(View.VISIBLE);
-        pauseButton = null;
+        rl.removeView(pauseButton);
         resumePauseGame();
         updateScoreBoard();
     }
@@ -370,7 +367,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         moveInsects = new Thread(new Runnable() {
             @Override
             public void run() {
-                while(!isActivityPaused) {
+                while(!isActivityPaused && !liveInsects.isEmpty()) {
                     Insect first,last;
                     if (moveLeft) {
                         for (final Insect i : liveInsects) {
