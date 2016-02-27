@@ -8,18 +8,10 @@
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/CreateRoomButton"
-        android:background="@drawable/createroombutton"
+        android:id="@+id/FindOpponentButton"
+        android:background="@drawable/findopponentbutton"
         android:layout_centerVertical="true"
-        android:layout_alignStart="@+id/FindRoomButton" />
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/FindRoomButton"
-        android:background="@drawable/findroombutton"
-        android:layout_below="@+id/CreateRoomButton"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="50dp" />
+        android:layout_toStartOf="@+id/logo" />
 
     <ImageView
         android:layout_width="100dp"
@@ -34,7 +26,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/listView"
         android:layout_alignParentStart="true"
-        android:layout_toStartOf="@+id/CreateRoomButton"
+        android:layout_toStartOf="@+id/FindOpponentButton"
         android:layout_alignParentTop="true"
         android:padding="50dp"
         android:background="@drawable/listbackground"/>
