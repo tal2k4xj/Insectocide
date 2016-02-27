@@ -13,7 +13,7 @@
         android:textColor="#ffffff"
         android:shadowColor="#000000"
         android:singleLine="false"
-        android:background="#022ea9"
+        android:background="@drawable/listlinebackground"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
 

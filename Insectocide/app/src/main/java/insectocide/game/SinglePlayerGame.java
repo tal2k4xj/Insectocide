@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputType;
 import android.util.DisplayMetrics;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,6 +65,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     private TextView scoreText;
     private ImageButton pauseButton;
     private String playerName;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -171,19 +173,20 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             public void run() {
                 while (!isActivityPaused) {
                     try {
+                        Random rand = new Random();
+                        int i, j;
+                        do {
+                            i = rand.nextInt(INSECTS_COLS);
+                            j = rand.nextInt(INSECTS_ROWS);
+                        } while (insects[i][j].isDead());
+                        final Insect insect = insects[i][j];
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                Random rand = new Random();
-                                int i, j;
-                                do {
-                                    i = rand.nextInt(INSECTS_COLS);
-                                    j = rand.nextInt(INSECTS_ROWS);
-                                } while (insects[i][j].isDead());
-                                Shot s = insects[i][j].fire();
-                                insectsShoots.add(s);
+                                Shot s = insect.fire();
                                 s.bringToFront();
                                 rl.addView(s);
+                                insectsShoots.add(s);
                             }
                         });
                         int timeToSleep = calculateInsectShootingTime();
@@ -197,15 +200,15 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             private int calculateInsectShootingTime() {
                 int numOfInsects = liveInsects.size();
                 if (numOfInsects>=25){
-                    return 400;
+                    return 450;
                 }else if(numOfInsects>=20){
-                    return 750;
+                    return 800;
                 }else if(numOfInsects>=15){
-                    return 1200;
+                    return 1300;
                 }else if(numOfInsects>=10){
-                    return 1500;
+                    return 1800;
                 }else {
-                    return 2000;
+                    return 2500;
                 }
             }
         });
@@ -318,7 +321,17 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         int score = calcScore();
         scoreText.setText("Score: " + score);
         scoreText.setVisibility(View.VISIBLE);
+        destroyThreads();
         updateScoreBoard();
+    }
+
+    private void destroyThreads(){
+        insectShots.interrupt();
+        moveShots.interrupt();
+        timer.interrupt();
+        insectShots = null;
+        moveShots = null;
+        timer = null;
     }
 
     private int calcScore() {
@@ -526,11 +539,23 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
                 playerName = input.getText().toString();
                 if (playerName.trim().isEmpty()) {
                     Toast.makeText(getApplicationContext(), "Name Can Not Be Empty. Score Will Not Save", Toast.LENGTH_SHORT).show();
+                }else{
+                    Player p = new Player(playerName, calcScore());
+                    saveScoreBoard(p);
                 }
-                Player p = new Player(playerName, calcScore());
-                saveScoreBoard(p);
+                finish();
             }
         });
-        builder.show();
+        if (!this.isFinishing())
+            builder.show();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
+            finish();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

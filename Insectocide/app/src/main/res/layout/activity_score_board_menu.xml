@@ -5,6 +5,14 @@
     android:background="@drawable/mainmenubackground"
     tools:context="insectocide.game.ScoreBoardMenu">
 
+
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/listView"
+        android:layout_centerHorizontal="true"
+        android:padding="75dp"
+        android:background="@drawable/scoreboard"/>
     <ImageView
         android:layout_width="100dp"
         android:layout_height="100dp"
@@ -12,10 +20,5 @@
         android:background="@drawable/logo"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true" />
-    <ListView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/listView"
-        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
