@@ -1,6 +1,11 @@
 package insectocide.game;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.content.res.TypedArray;
 import android.graphics.RectF;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -8,19 +13,27 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.InputType;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 import insectocide.logic.Insect;
 import insectocide.logic.InsectType;
+import insectocide.logic.InsectsProvider;
+import insectocide.logic.Player;
 import insectocide.logic.Shot;
 import insectocide.logic.SpaceShip;
 
@@ -36,7 +49,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     private SpaceShip spaceShip;
     private DisplayMetrics metrics;
     private Insect insects[][];
-    private Handler handler;
+    private Handler startDelayHandler;
     private List<Shot> shipShoots;
     private List<Shot> insectsShoots;
     private List<Insect> liveInsects;
@@ -50,36 +63,35 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     private Thread timer;
     private TextView scoreText;
     private ImageButton pauseButton;
-
+    private String playerName;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single_player_game);
         shipShoots = new CopyOnWriteArrayList<>();
         insectsShoots = new CopyOnWriteArrayList<>();
-        liveInsects = new CopyOnWriteArrayList<>();
         shipLives = new CopyOnWriteArrayList<>();
-        metrics = new DisplayMetrics();
-        handler = new Handler();
-        timeOfGame = 0;
 
+        startDelayHandler = new Handler();
+        timeOfGame = 0;
+        playerName ="";
         scoreText = (TextView) findViewById(R.id.ScoreText);
         scoreText.setVisibility(View.INVISIBLE);
         pauseButton = (ImageButton) findViewById(R.id.pauseButton);
         pauseButton.setOnClickListener(this);
-
+        metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         rl = (RelativeLayout)findViewById(R.id.singlePlayerLayout);
 
         initShip();
-        upDateLives();
+        updateLives();
         initInsects();
         initHandler();
         initReadyGo();
     }
 
     private void initHandler() {
-        handler.postDelayed(new Runnable() {
+        startDelayHandler.postDelayed(new Runnable() {
             public void run() {
                 isStartAnimationDone = true;
                 initAccelerometer();
@@ -103,23 +115,14 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     }
 
     private void initInsects(){
-        insects = new Insect[INSECTS_COLS][INSECTS_ROWS];
-        for (int i=0 ; i < INSECTS_COLS ; i++){
-            for(int j=0 ; j < INSECTS_ROWS ; j++){
-                insects[i][j] = new Insect(pickRandomType(),this,this.metrics);
-                insects[i][j].setPositionAndDimensions(i,j);
-                insects[i][j].bringToFront();
-                liveInsects.add(insects[i][j]);
-                rl.addView(insects[i][j]);
-            }
+        InsectsProvider insectsProvider = new InsectsProvider(INSECTS_ROWS, INSECTS_COLS, this, metrics);
+        liveInsects = insectsProvider.getLiveInsectsList();
+        insects = insectsProvider.getInsectMatrix();
+        for (Insect insect: liveInsects) {
+            rl.addView(insect);
         }
     }
 
-    public InsectType pickRandomType(){
-        Random rand = new Random();
-        int n = rand.nextInt(5);
-        return InsectType.values()[n];
-    }
 
     private void initAccelerometer() {
         sm=(SensorManager)getSystemService(SENSOR_SERVICE);
@@ -133,11 +136,11 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
 
     public void initReadyGo(){
         readyGo("ready");
-        handler.postDelayed(new Runnable() {
+        startDelayHandler.postDelayed(new Runnable() {
             public void run() {
                 readyGo("go");
             }
-        }, 3500);
+        }, 4500);
     }
 
     public void readyGo(String image){
@@ -155,7 +158,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         rl.addView(readyGo);
         readyGo.animate().x((float) (readyGo.getX() + metrics.widthPixels * 0.5 + width / 2));
         readyGo.animate().setDuration(500);
-        handler.postDelayed(new Runnable() {
+        startDelayHandler.postDelayed(new Runnable() {
             public void run() {
                 readyGo.animate().x((float) (readyGo.getX() + metrics.widthPixels * 0.5 + width / 2));
                 readyGo.animate().setDuration(500);
@@ -194,15 +197,15 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             private int calculateInsectShootingTime() {
                 int numOfInsects = liveInsects.size();
                 if (numOfInsects>=25){
-                    return 500;
+                    return 400;
                 }else if(numOfInsects>=20){
-                    return 850;
+                    return 750;
                 }else if(numOfInsects>=15){
-                    return 1300;
+                    return 1200;
                 }else if(numOfInsects>=10){
-                    return 1750;
+                    return 1500;
                 }else {
-                    return 2200;
+                    return 2000;
                 }
             }
         });
@@ -240,7 +243,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
                                 removeShot(s);
                             }
                         }
-                        upDateLives();
+                        updateLives();
                         Thread.sleep(50);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -289,7 +292,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         rl.addView(bonus);
         bonus.animate().y(bonus.getY() - 100);
         bonus.animate().setDuration(3000);
-        handler.postDelayed(new Runnable() {
+        startDelayHandler.postDelayed(new Runnable() {
             public void run() {
                 bonus.setVisibility(View.INVISIBLE);
             }
@@ -301,7 +304,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                handler.postDelayed(new Runnable() {
+                startDelayHandler.postDelayed(new Runnable() {
                     public void run() {
                         spaceShip.win();
                     }
@@ -315,6 +318,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         int score = calcScore();
         scoreText.setText("Score: " + score);
         scoreText.setVisibility(View.VISIBLE);
+        updateScoreBoard();
     }
 
     private int calcScore() {
@@ -336,7 +340,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
                         e.printStackTrace();
                     }
 
-                    handler.post(new Runnable() {
+                    startDelayHandler.post(new Runnable() {
                         @Override
                         public void run() {
                             timeOfGame++;
@@ -358,7 +362,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
                 loseGame();
             }
             removeShot(s);
-        } // need to add blue ship for multiplayer
+        }
     }
 
     private void loseGame() {
@@ -380,7 +384,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             insectsShoots.remove(s);
     }
 
-    private void upDateLives(){
+    private void updateLives(){
         if (shipLives.size() > spaceShip.getHealth()){
             removeShipLive();
         }else if (shipLives.size() < spaceShip.getHealth()){
@@ -410,12 +414,12 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     }
 
     private void removeShipLive(){
-        for (int i=spaceShip.getHealth(); i<shipLives.size() ; i++){
+        for (int i=(int)spaceShip.getHealth(); i<shipLives.size() ; i++){
             final ImageView live = shipLives.get(i);
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    live.setVisibility(View.VISIBLE);
+                    live.setVisibility(View.INVISIBLE);
                     rl.removeView(live);
                 }
             });
@@ -498,5 +502,35 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     protected void onStop() {
         super.onStop();
         resumePauseGame();
+    }
+    private void updateScoreBoard() {
+        popUpPlayerNameInput();
+    }
+    public void saveScoreBoard(Player p){
+        SharedPreferences settings = getSharedPreferences("ScoreBoard", Context.MODE_APPEND);
+        String board = settings.getString("score_board", "");
+        board = board.concat(p.toSaveString());
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString("score_board", board);
+        editor.commit();
+    }
+    public void popUpPlayerNameInput(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("You Set a New Record!\nPlease Enter Your Name:");
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                playerName = input.getText().toString();
+                if (playerName.trim().isEmpty()) {
+                    Toast.makeText(getApplicationContext(), "Name Can Not Be Empty. Score Will Not Save", Toast.LENGTH_SHORT).show();
+                }
+                Player p = new Player(playerName, calcScore());
+                saveScoreBoard(p);
+            }
+        });
+        builder.show();
     }
 }

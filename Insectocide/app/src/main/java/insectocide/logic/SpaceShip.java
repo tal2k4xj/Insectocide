@@ -64,19 +64,19 @@ public class SpaceShip extends SpaceEntity {
         switch (direction) {
             case "left2":
                 if (getX() > 0)
-                    setX(getX()- (movementSpeed*2));
+                    setX(getX()- (float)(movementSpeed*2));
                 break;
             case "left3":
                 if (getX() > 0)
-                    setX(getX()- (movementSpeed*3));
+                    setX(getX()- (float)(movementSpeed*3));
                 break;
             case "right2":
                 if (getX() < metrics.widthPixels-width)
-                    setX(getX()+ (movementSpeed*2));
+                    setX(getX()+ (float)(movementSpeed*2));
                 break;
             case "right3":
                 if (getX() < metrics.widthPixels-width)
-                    setX(getX()+ (movementSpeed*3));
+                    setX(getX()+ (float)(movementSpeed*3));
                 break;
             }
         lastMovement=direction;
@@ -93,30 +93,30 @@ public class SpaceShip extends SpaceEntity {
         switch(type){
             case ExtraHealth:
                 if (health <MAX_HEALTH)
-                    health+=1;
+                    health+=0.5;
                 break;
             case PowerShoot:
                 if (firePower <MAX_FIRE_POWER)
-                firePower+=1;
+                firePower+=0.5;
                 break;
             case SpeedyShoot:
                 if (fireSpeed <MAX_FIRE_SPEED)
-                    fireSpeed+=1;
+                    fireSpeed+=0.5;
                 break;
             case DoubleShoot:
                 if (movementSpeed <MAX_MOVEMENT_SPEED)
-                    movementSpeed+=1;
+                    movementSpeed+=0.5;
                 break;
         }
     }
 
     public void resetPowers() {
         if (movementSpeed > 2 )
-            movementSpeed-=1;
+            movementSpeed-=0.5;
         if (firePower > 1 )
-            firePower-=1;
+            firePower-=0.5;
         if (fireSpeed > 2 )
-            fireSpeed-=1;
+            fireSpeed-=0.5;
     }
 
     public void die(){
