@@ -97,7 +97,7 @@ public class SpaceShip extends SpaceEntity {
                 break;
             case PowerShoot:
                 if (firePower <MAX_FIRE_POWER)
-                firePower+=0.5;
+                firePower+=1;
                 break;
             case SpeedyShoot:
                 if (fireSpeed <MAX_FIRE_SPEED)
@@ -114,7 +114,7 @@ public class SpaceShip extends SpaceEntity {
         if (movementSpeed > 2 )
             movementSpeed-=0.5;
         if (firePower > 1 )
-            firePower-=0.5;
+            firePower-=1;
         if (fireSpeed > 2 )
             fireSpeed-=0.5;
     }

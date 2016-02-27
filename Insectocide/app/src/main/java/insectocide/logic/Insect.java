@@ -27,7 +27,14 @@ public class Insect extends SpaceEntity {
 
     @Override
     public void move(String direction) {
-
+        switch (direction) {
+            case "left":
+                setX(getX()- (float)(movementSpeed*2));
+                break;
+            case "right":
+                setX(getX()+ (float)(movementSpeed*2));
+                break;
+        }
     }
 
     private void setImageByType(){
@@ -68,7 +75,7 @@ public class Insect extends SpaceEntity {
 
     private void setDefaults() {
         health=2;
-        movementSpeed=2;
+        movementSpeed=4;
         firePower=1;
         fireSpeed=2;
     }

@@ -55,8 +55,10 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     private long lastShootTime = 0;
     private boolean isActivityPaused = false;
     private boolean isStartAnimationDone = false;
+    private boolean moveLeft = true;
     private Thread insectShots;
     private Thread moveShots;
+    private Thread moveInsects;
     private Thread timer;
     private TextView scoreText;
     private ImageButton pauseButton;
@@ -92,6 +94,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             public void run() {
                 isStartAnimationDone = true;
                 initAccelerometer();
+                initMoveInsectsThread();
                 initMoveShotsThread();
                 startInsectsShotsThread();
                 startTimer();
@@ -170,22 +173,25 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
                 while (!isActivityPaused) {
                     try {
                         Random rand = new Random();
-                        int i = rand.nextInt(liveInsects.size());
-                        final Insect insect = liveInsects.get(i);
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Shot s = insect.fire();
-                                s.bringToFront();
-                                rl.addView(s);
-                                insectsShoots.add(s);
-                            }
-                        });
-                        int timeToSleep = calculateInsectShootingTime();
-                        Thread.sleep(timeToSleep);
+                        if(!liveInsects.isEmpty()) {
+                            int i = rand.nextInt(liveInsects.size());
+                            final Insect insect = liveInsects.get(i);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Shot s = insect.fire();
+                                    s.bringToFront();
+                                    rl.addView(s);
+                                    insectsShoots.add(s);
+                                }
+                            });
+                            int timeToSleep = calculateInsectShootingTime();
+                            Thread.sleep(timeToSleep);
+                        }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+
                 }
             }
 
@@ -312,6 +318,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         int score = calcScore();
         scoreText.setText("Score: " + score);
         scoreText.setVisibility(View.VISIBLE);
+        pauseButton = null;
         resumePauseGame();
         updateScoreBoard();
     }
@@ -358,6 +365,70 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             }
             removeShot(s);
         }
+    }
+    private synchronized void initMoveInsectsThread(){
+        moveInsects = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(!isActivityPaused) {
+                    Insect first,last;
+                    if (moveLeft) {
+                        for (final Insect i : liveInsects) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    i.move("left");
+                                }
+                            });
+                        }
+                        first = liveInsects.get(0);
+                        if(first.getX() > 0){
+                            moveLeft= true;
+                        }else{
+                            moveLeft=false;
+                        }
+                    } else{ //move right
+                        for (final Insect i : liveInsects) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    i.move("right");
+                                }
+                            });
+                        }
+                        last = liveInsects.get(liveInsects.size() - 1);
+                        if (last.getX() + last.getWidth() < metrics.widthPixels){
+                            moveLeft = false;
+                        }else{
+                            moveLeft = true;
+                        }
+                    }
+                    int insectSpeed = calcInsectSpeed();
+                    try {
+                        Thread.sleep(insectSpeed);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            private int calcInsectSpeed() {
+                int numOfInsects = liveInsects.size();
+                if (numOfInsects>=25){
+                    return 200;
+                }else if(numOfInsects>=20){
+                    return 180;
+                }else if(numOfInsects>=15){
+                    return 150;
+                }else if(numOfInsects>=10){
+                    return 120;
+                }else {
+                    return 100;
+                }
+            }
+        });
+
+        moveInsects.start();
     }
 
     private void loseGame() {
@@ -478,6 +549,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         }else if (isStartAnimationDone && isActivityPaused) {
             isActivityPaused = false;
             initAccelerometer();
+            initMoveInsectsThread();
             initMoveShotsThread();
             startInsectsShotsThread();
             startTimer();
