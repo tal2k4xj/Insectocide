@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 public class SpaceShip extends SpaceEntity {
+    private final double ATTRIBUTES_FACTOR = 0.5;
     private final int MAX_HEALTH = 5;
     private final int MAX_FIRE_POWER = 2;
     private final int MAX_FIRE_SPEED = 4;
@@ -93,30 +94,30 @@ public class SpaceShip extends SpaceEntity {
         switch(type){
             case ExtraHealth:
                 if (health <MAX_HEALTH)
-                    health+=0.5;
+                    health+=ATTRIBUTES_FACTOR;
                 break;
             case PowerShoot:
                 if (firePower <MAX_FIRE_POWER)
-                firePower+=1;
+                firePower+=ATTRIBUTES_FACTOR;
                 break;
             case SpeedyShoot:
                 if (fireSpeed <MAX_FIRE_SPEED)
-                    fireSpeed+=0.5;
+                    fireSpeed+=ATTRIBUTES_FACTOR;
                 break;
             case DoubleShoot:
                 if (movementSpeed <MAX_MOVEMENT_SPEED)
-                    movementSpeed+=0.5;
+                    movementSpeed+=ATTRIBUTES_FACTOR;
                 break;
         }
     }
 
-    public void resetPowers() {
+    public void reducePowers() {
         if (movementSpeed > 2 )
-            movementSpeed-=0.5;
+            movementSpeed-=ATTRIBUTES_FACTOR;
         if (firePower > 1 )
-            firePower-=1;
+            firePower-=ATTRIBUTES_FACTOR;
         if (fireSpeed > 2 )
-            fireSpeed-=0.5;
+            fireSpeed-=ATTRIBUTES_FACTOR;
     }
 
     public void die(){

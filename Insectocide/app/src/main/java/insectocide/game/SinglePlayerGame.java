@@ -321,7 +321,13 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     }
 
     private int calcScore() {
-        return (getNumOfKilledInsects()*10000)/(timeOfGame);
+        int score = 0;
+        if (liveInsects.isEmpty()){
+            score+=1000; // if killed all insects + 1000;
+            score+= spaceShip.getHealth()*200; //+200 for every life;
+        }
+        score += (getNumOfKilledInsects()*400) - (timeOfGame)*100;
+        return (score > 0) ? score : 0;
     }
 
     private int getNumOfKilledInsects() {
@@ -356,7 +362,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         RectF r2 = spaceShip.getRect();
         if (r1.intersect(r2)){
             spaceShip.gotHit(s.getPower());
-            spaceShip.resetPowers();
+            spaceShip.reducePowers();
             if(spaceShip.isDead()){
                 loseGame();
             }
