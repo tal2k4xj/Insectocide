@@ -2,16 +2,12 @@ package insectocide.logic;
 
 import android.content.Context;
 import android.util.DisplayMetrics;
-import android.widget.RelativeLayout;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-/**
- * Created by Zukis87 on 23/02/2016.
- */
 public class InsectsProvider {
     private Insect[][] insects;
     private CopyOnWriteArrayList<Insect> liveInsects;
