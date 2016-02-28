@@ -31,7 +31,7 @@ public class MainMenu extends Activity implements View.OnClickListener {
         SettingsButton = findViewById(R.id.SettingsButton);
 
         startAppVideo = (VideoView)findViewById(R.id.StartVideo);
-        String UrlPath="android.resource://"+getPackageName()+"/"+R.raw.zoocoyote;
+        String UrlPath="android.resource://"+getPackageName()+"/"+R.raw.insectocideintro;
         startAppVideo.setVideoURI(Uri.parse(UrlPath));
         startAppVideo.start();
 
@@ -40,7 +40,7 @@ public class MainMenu extends Activity implements View.OnClickListener {
                 rl.removeView(startAppVideo);
                 activateListeners();
             }
-        }, 6000);
+        }, 15000);
     }
 
     private void initEnglishDefaultLanguage() {
