@@ -27,11 +27,8 @@ public class MainMenu extends Activity implements View.OnClickListener {
         initEnglishDefaultLanguage();
         rl = (RelativeLayout)findViewById(R.id.mainMenuLayout);
         singlePlayerButton = findViewById(R.id.SinglePlayerButton);
-        singlePlayerButton.setOnClickListener(this);
         MultiPlayerButton = findViewById(R.id.MultiPlayerButton);
-        MultiPlayerButton.setOnClickListener(this);
         SettingsButton = findViewById(R.id.SettingsButton);
-        SettingsButton.setOnClickListener(this);
 
         startAppVideo = (VideoView)findViewById(R.id.StartVideo);
         String UrlPath="android.resource://"+getPackageName()+"/"+R.raw.zoocoyote;
@@ -41,11 +38,10 @@ public class MainMenu extends Activity implements View.OnClickListener {
         new Handler().postDelayed(new Runnable() {
             public void run() {
                 rl.removeView(startAppVideo);
+                activateListeners();
             }
         }, 6000);
     }
-
-
 
     private void initEnglishDefaultLanguage() {
         Locale locale = new Locale("en_US");
@@ -82,5 +78,11 @@ public class MainMenu extends Activity implements View.OnClickListener {
         singlePlayerButton.setBackgroundResource(R.drawable.singleplayerbutton);
         MultiPlayerButton.setBackgroundResource(R.drawable.multiplayerbutton);
         SettingsButton.setBackgroundResource(R.drawable.settingsbutton);
+    }
+
+    private void activateListeners(){
+        singlePlayerButton.setOnClickListener(this);
+        MultiPlayerButton.setOnClickListener(this);
+        SettingsButton.setOnClickListener(this);
     }
 }
