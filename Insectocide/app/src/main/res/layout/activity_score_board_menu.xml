@@ -21,7 +21,7 @@
     <ImageView
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:id="@+id/logo"
+        android:id="@+id/Logo"
         android:background="@drawable/logo"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true" />

@@ -8,9 +8,31 @@
     <ImageView
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:id="@+id/logo"
+        android:id="@+id/Logo"
         android:background="@drawable/logo"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/SoundButton"
+        android:background="@drawable/soundon"
+        android:layout_above="@+id/InstructionsButton"
+        android:layout_centerHorizontal="true" />
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/InstructionsButton"
+        android:background="@drawable/instructionsbutton"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/CreditsButton"
+        android:background="@drawable/creditsbutton"
+        android:layout_below="@+id/InstructionsButton"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

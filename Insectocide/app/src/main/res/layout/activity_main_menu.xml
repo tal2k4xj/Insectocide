@@ -3,12 +3,13 @@
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/mainmenubackground"
+    android:id="@+id/mainMenuLayout"
     tools:context="insectocide.game.MainMenu">
 
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/singlePlayerButton"
+        android:id="@+id/SinglePlayerButton"
         android:background="@drawable/singleplayerbutton"
         android:layout_above="@+id/MultiPlayerButton"
         android:layout_centerHorizontal="true" />
@@ -30,8 +31,18 @@
     <ImageView
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:id="@+id/logo"
+        android:id="@+id/Logo"
         android:background="@drawable/logo"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true" />
+
+    <VideoView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/StartVideo"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true" />
+
 </RelativeLayout>
