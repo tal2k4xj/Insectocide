@@ -21,6 +21,21 @@
         android:background="@drawable/findopponentbutton"
         android:layout_centerVertical="true"
         android:layout_toStartOf="@+id/Logo" />
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/EnableWifiButton"
+        android:background="@drawable/enablewifibutton"
+        android:layout_above="@+id/FindOpponentButton"
+        android:layout_toEndOf="@+id/imageView" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/DisableWifiButton"
+        android:background="@drawable/disablewifibutton"
+        android:layout_below="@+id/FindOpponentButton"
+        android:layout_toEndOf="@+id/imageView" />
 
     <ImageView
         android:layout_width="100dp"
@@ -38,5 +53,14 @@
         android:layout_toStartOf="@+id/FindOpponentButton"
         android:layout_alignParentTop="true"
         android:padding="50dp" />
+
+    <ProgressBar
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/progressBar"
+        android:visibility="invisible"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

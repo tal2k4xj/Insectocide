@@ -14,6 +14,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -27,7 +28,11 @@ public class MultiplayerMenu extends Activity implements View.OnClickListener,Wi
     private ArrayAdapter<String> adapter;
     private ListView listView;
     private ImageButton findOpponentButton;
+    private ImageButton enableWifi;
+    private ImageButton disableWifi;
     private Handler buttonHandler;
+    private ProgressBar loading;
+    private int progressStatus;
 
     private WifiP2pManager.Channel mChannel;
     private WifiP2pManager mManager;
@@ -44,8 +49,15 @@ public class MultiplayerMenu extends Activity implements View.OnClickListener,Wi
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), this);
 
+        enableWifi = (ImageButton)findViewById(R.id.EnableWifiButton);
+        enableWifi.setOnClickListener(this);
         findOpponentButton = (ImageButton)findViewById(R.id.FindOpponentButton);
         findOpponentButton.setOnClickListener(this);
+        disableWifi = (ImageButton)findViewById(R.id.DisableWifiButton);
+        disableWifi.setOnClickListener(this);
+
+        loading = (ProgressBar)findViewById(R.id.progressBar);
+        progressStatus =0;
 
         listView = (ListView) findViewById(R.id.listView);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -54,6 +66,60 @@ public class MultiplayerMenu extends Activity implements View.OnClickListener,Wi
                 onConnect(wfdDevices[position]);
             }
         });
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.EnableWifiButton:
+                enableWifi.setBackgroundResource(R.drawable.enablewifibuttonpressed);
+                startProgressBar();
+                registerWfdReceiver();
+                break;
+            case R.id.FindOpponentButton:
+                findOpponentButton.setBackgroundResource(R.drawable.findopponentbuttonpressed);
+                startProgressBar();
+                onDiscover();
+                loadRooms();
+                break;
+            case R.id.DisableWifiButton:
+                disableWifi.setBackgroundResource(R.drawable.disablewifibuttonpressed);
+                startProgressBar();
+                unRegisterWfdReceiver();
+                break;
+        }
+        buttonHandler.postDelayed(new Runnable() {
+            public void run() {
+                findOpponentButton.setBackgroundResource(R.drawable.findopponentbutton);
+                enableWifi.setBackgroundResource(R.drawable.enablewifibutton);
+                disableWifi.setBackgroundResource(R.drawable.disablewifibutton);
+            }
+        }, 500);
+    }
+
+    private void startProgressBar() {
+        loading.setVisibility(View.VISIBLE);
+        new Handler().postDelayed(new Runnable() {
+            public void run() {
+                loading.setVisibility(View.INVISIBLE);
+            }
+        }, 5000);
+    }
+
+    private void registerWfdReceiver(){
+        wfdReceiver = new WiFiDirectReceiver(mManager, mChannel, this);
+        wfdReceiver.registerReceiver();
+    }
+
+    public void onDiscover(){
+        if(isWfdReceiverRegisteredAndFeatureEnabled()){
+            mManager.discoverPeers(mChannel,
+                    new ActionListenerHandler(this, "Discover Peers"));
+        }
+    }
+
+    private boolean isWfdReceiverRegisteredAndFeatureEnabled(){
+        return (wfdReceiver != null && wfdReceiver.isWifiDirectEnabled);
     }
 
     public void loadRooms(){
@@ -67,49 +133,10 @@ public class MultiplayerMenu extends Activity implements View.OnClickListener,Wi
         }
     }
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.FindOpponentButton:
-                findOpponentButton.setBackgroundResource(R.drawable.findopponentbuttonpressed);
-                registerWfdReceiver();
-                onDiscover();
-                loadRooms();
-                break;
-        }
-        buttonHandler.postDelayed(new Runnable() {
-            public void run() {
-                findOpponentButton.setBackgroundResource(R.drawable.findopponentbutton);
-            }
-        }, 500);
-    }
-
-    public void onChannelDisconnected(){
-        Toast.makeText(this, "WiFi Direct Disconnected - Reinitialize.", Toast.LENGTH_SHORT).show();
-        reinitializeChannel();
-    }
-
-    private void reinitializeChannel(){
-        mChannel = mManager.initialize(this, getMainLooper(), this);
-        Toast.makeText(this, "WiFi Direct Channel Initialization: " + ((mChannel != null)? "SUCCESS" : "FAILED"), Toast.LENGTH_SHORT).show();
-    }
-
-    private void registerWfdReceiver(){
-        wfdReceiver = new WiFiDirectReceiver(mManager, mChannel, this);
-        wfdReceiver.registerReceiver();
-    }
-
     private void unRegisterWfdReceiver(){
         if(wfdReceiver != null)
             wfdReceiver.unregisterReceiver();
         wfdReceiver = null;
-    }
-
-    public void onDiscover(){
-        if(isWfdReceiverRegisteredAndFeatureEnabled()){
-            mManager.discoverPeers(mChannel,
-                    new ActionListenerHandler(this, "Discover Peers"));
-        }
     }
 
     public void onConnect(WifiP2pDevice device){
@@ -123,7 +150,13 @@ public class MultiplayerMenu extends Activity implements View.OnClickListener,Wi
         }
     }
 
-    private boolean isWfdReceiverRegisteredAndFeatureEnabled(){
-        return (wfdReceiver != null && wfdReceiver.isWifiDirectEnabled);
+    public void onChannelDisconnected(){
+        Toast.makeText(this, "WiFi Direct Disconnected - Reinitialize.", Toast.LENGTH_SHORT).show();
+        reinitializeChannel();
+    }
+
+    private void reinitializeChannel(){
+        mChannel = mManager.initialize(this, getMainLooper(), this);
+        Toast.makeText(this, "WiFi Direct Channel Initialization: " + ((mChannel != null)? "SUCCESS" : "FAILED"), Toast.LENGTH_SHORT).show();
     }
 }

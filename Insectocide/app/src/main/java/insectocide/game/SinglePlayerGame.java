@@ -10,6 +10,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputType;
@@ -40,6 +41,10 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     private final int INSECTS_COLS = 10;
     private final long SHOOT_DELAY = 800;
     private final long START_ANIMATION_DELAY = 7200;
+    private MediaPlayer shipStart;
+    private MediaPlayer shootSound;
+    private MediaPlayer shipExplode;
+    private MediaPlayer bugDie;
     private int timeOfGame;
     private Sensor accelerometer;
     private SensorManager sm;
@@ -64,6 +69,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     private ImageButton pauseButton;
     private String playerName;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,6 +87,11 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         rl = (RelativeLayout)findViewById(R.id.singlePlayerLayout);
+
+        shootSound = MediaPlayer.create(this, R.raw.shoot);
+        shipStart = MediaPlayer.create(this, R.raw.shipstart);
+        shipExplode = MediaPlayer.create(this, R.raw.shipexplode);
+        bugDie = MediaPlayer.create(this, R.raw.bugdie);
 
         initShip();
         updateLives();
@@ -112,6 +123,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         spaceShip = new SpaceShip(DEFAULT_COLOR, this , metrics);
         spaceShip.bringToFront();
         rl.addView(spaceShip);
+        shipStart.start();
     }
 
     private void initInsects(){
@@ -268,6 +280,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
                     });
                     spaceShip.getPowerFromInsect(insect.getType());
                     liveInsects.remove(insect);
+                    bugDie.start();
                 }
                 if (liveInsects.size()==0){
                     winGame();
@@ -338,7 +351,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                while (!spaceShip.isDead()&& liveInsects.size()>0) {
+                while (!isActivityPaused && !spaceShip.isDead()&& liveInsects.size()>0) {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
@@ -364,6 +377,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             spaceShip.gotHit(s.getPower());
             spaceShip.reducePowers();
             if(spaceShip.isDead()){
+                shipExplode.start();
                 loseGame();
             }
             removeShot(s);
@@ -541,6 +555,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             s.bringToFront();
             rl.addView(s);
             lastShootTime = time;
+            shootSound.start();
         }
         return false;
     }
