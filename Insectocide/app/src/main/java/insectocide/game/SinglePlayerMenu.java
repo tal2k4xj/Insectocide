@@ -28,6 +28,7 @@ public class SinglePlayerMenu extends Activity implements View.OnClickListener {
             case R.id.newGameButton:
                 newGameButton.setBackgroundResource(R.drawable.newgamebuttonpressed);
                 Intent newGame = new Intent (this,SinglePlayerGame.class);
+                newGame.putExtra("MULTIPLAYER", false);
                 startActivity(newGame);
                 break;
             case R.id.scoreBoardButton:

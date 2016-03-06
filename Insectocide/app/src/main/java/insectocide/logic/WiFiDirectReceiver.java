@@ -10,11 +10,16 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.util.Log;
 import android.widget.Toast;
+
+import java.io.IOException;
+
+import insectocide.game.SinglePlayerGame;
 
 public class WiFiDirectReceiver extends BroadcastReceiver implements WifiP2pManager.PeerListListener, WifiP2pManager.ConnectionInfoListener {
 
-    public final int PORT = 7890;
+    public static final int PORT = 4545;
     public boolean isWifiDirectEnabled;
     private WifiP2pManager wfdManager;
     private WifiP2pManager.Channel wfdChannel;
@@ -29,12 +34,10 @@ public class WiFiDirectReceiver extends BroadcastReceiver implements WifiP2pMana
         this.activity = activity;
     }
 
-
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
 
-        Toast.makeText(activity.getApplicationContext(), action, Toast.LENGTH_SHORT).show();
         if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
             handleWifiP2pStateChanged(intent);
         } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
@@ -69,9 +72,6 @@ public class WiFiDirectReceiver extends BroadcastReceiver implements WifiP2pMana
         if(info != null && info.isConnected()){
             wfdManager.requestConnectionInfo(wfdChannel, this);
         }
-        else{
-            Toast.makeText(activity.getApplicationContext(), "Connection Closed", Toast.LENGTH_SHORT).show();
-        }
     }
 
     public void registerReceiver(){
@@ -95,30 +95,20 @@ public class WiFiDirectReceiver extends BroadcastReceiver implements WifiP2pMana
 
     @Override
     public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
-        /*if(wifiP2pInfo.groupFormed){
-            Intent intent = new Intent(appActivity, StartGame.class);
+        if(wifiP2pInfo.groupFormed){
+            Intent intent = new Intent(activity, SinglePlayerGame.class);
+            intent.putExtra("MULTIPLAYER", true);
             intent.putExtra("WIFI_P2P_INFO", wifiP2pInfo);
-            appActivity.startActivity(intent);
-
-            //if(wifiP2pInfo.isGroupOwner){
-            //        //Open a ServerSocket
-            //}
-            //else {
-            //    // Open a socket to wifiP2pInfo.groupOwnerAddress
-            //}
-
-        }*/
+            activity.startActivity(intent);
+        }
     }
 
     @Override
     public void onPeersAvailable(WifiP2pDeviceList wifiP2pDeviceList) {
-        if(wifiP2pDeviceList != null &&
-                wifiP2pDeviceList.getDeviceList() != null &&
-                wifiP2pDeviceList.getDeviceList().size() > 0){
+        if(wifiP2pDeviceList != null && wifiP2pDeviceList.getDeviceList() != null && wifiP2pDeviceList.getDeviceList().size() > 0){
             wfdDevices = wifiP2pDeviceList.getDeviceList().toArray(new WifiP2pDevice[0]);
         }
         else {
-            Toast.makeText(activity.getApplicationContext(), wifiP2pDeviceList.toString(), Toast.LENGTH_SHORT).show();
             wfdDevices = null;
         }
     }

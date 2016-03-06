@@ -11,8 +11,10 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.media.MediaPlayer;
+import android.net.wifi.p2p.WifiP2pInfo;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Vibrator;
 import android.text.InputType;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
@@ -25,7 +27,12 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -34,6 +41,7 @@ import insectocide.logic.InsectsProvider;
 import insectocide.logic.Player;
 import insectocide.logic.Shot;
 import insectocide.logic.SpaceShip;
+import insectocide.logic.WiFiDirectReceiver;
 
 public class SinglePlayerGame extends Activity implements SensorEventListener,View.OnClickListener {
     private final String DEFAULT_COLOR = "red";
@@ -41,6 +49,8 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     private final int INSECTS_COLS = 10;
     private final long SHOOT_DELAY = 800;
     private final long START_ANIMATION_DELAY = 7200;
+    private boolean isMultiplayer = false;
+    private WifiP2pInfo wifiP2pInfo;
     private MediaPlayer shipStart;
     private MediaPlayer shootSound;
     private MediaPlayer shipExplode;
@@ -48,7 +58,8 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     private int timeOfGame;
     private Sensor accelerometer;
     private SensorManager sm;
-    private SpaceShip spaceShip;
+    private SpaceShip redShip;
+    private SpaceShip blueShip;
     private DisplayMetrics metrics;
     private Insect insects[][];
     private Handler timerHandler;
@@ -68,6 +79,13 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     private TextView scoreText;
     private ImageButton pauseButton;
     private String playerName;
+    private Vibrator vibrate;
+    private ServerSocket server;
+    private Socket connection;
+    private ObjectOutputStream output;
+    private ObjectInputStream input;
+    private ServerSocketThread serverThread;
+    private ClientSocketThread clientThread;
 
 
     @Override
@@ -88,10 +106,18 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         rl = (RelativeLayout)findViewById(R.id.singlePlayerLayout);
 
+        vibrate = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+
         shootSound = MediaPlayer.create(this, R.raw.shoot);
         shipStart = MediaPlayer.create(this, R.raw.shipstart);
         shipExplode = MediaPlayer.create(this, R.raw.shipexplode);
         bugDie = MediaPlayer.create(this, R.raw.bugdie);
+
+        Bundle extras = getIntent().getExtras();
+        isMultiplayer = extras.getBoolean("MULTIPLAYER");
+        if(isMultiplayer)
+            wifiP2pInfo = (WifiP2pInfo)extras.get("WIFI_P2P_INFO");
+        initMultiplayer();
 
         initShip();
         updateLives();
@@ -116,13 +142,32 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     @Override
     protected void onStart(){
         super.onStart();
-        resumePauseGame();
+        if(!isMultiplayer)
+            resumePauseGame();
+    }
+
+    private void initMultiplayer(){
+        if(isMultiplayer) {
+            connection = new Socket();
+            if (wifiP2pInfo.isGroupOwner) {
+                serverThread = new ServerSocketThread();
+                serverThread.run();
+            } else {
+                clientThread = new ClientSocketThread();
+                clientThread.run();
+            }
+        }
     }
 
     private void initShip(){
-        spaceShip = new SpaceShip(DEFAULT_COLOR, this , metrics);
-        spaceShip.bringToFront();
-        rl.addView(spaceShip);
+        if(isMultiplayer){
+            blueShip = new SpaceShip("blue", this , metrics);
+            redShip.bringToFront();
+            rl.addView(blueShip);
+        }
+        redShip = new SpaceShip(DEFAULT_COLOR, this , metrics);
+        redShip.bringToFront();
+        rl.addView(redShip);
         shipStart.start();
     }
 
@@ -134,7 +179,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             rl.addView(insect);
         }
     }
-
 
     private void initAccelerometer() {
         sm=(SensorManager)getSystemService(SENSOR_SERVICE);
@@ -276,11 +320,11 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
                         public void run() {
                             insect.die();
                             showInsectBonus(insect);
+                            bugDie.start();
                         }
                     });
-                    spaceShip.getPowerFromInsect(insect.getType());
+                    redShip.getPowerFromInsect(insect.getType());
                     liveInsects.remove(insect);
-                    bugDie.start();
                 }
                 if (liveInsects.size()==0){
                     winGame();
@@ -316,7 +360,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             public void run() {
                 new Handler().postDelayed(new Runnable() {
                     public void run() {
-                        spaceShip.win();
+                        redShip.win();
                     }
                 }, 300);
                 endGame();
@@ -337,7 +381,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         int score = 0;
         if (liveInsects.isEmpty()){
             score+=1000; // if killed all insects + 1000;
-            score+= spaceShip.getHealth()*200; //+200 for every life;
+            score+= redShip.getHealth()*200; //+200 for every life;
         }
         score += (getNumOfKilledInsects()*400) - (timeOfGame)*100;
         return (score > 0) ? score : 0;
@@ -351,7 +395,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                while (!isActivityPaused && !spaceShip.isDead()&& liveInsects.size()>0) {
+                while (!isActivityPaused && !redShip.isDead()&& liveInsects.size()>0) {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
@@ -372,12 +416,12 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     }
     private void checkIfShipHit(Shot s){
         RectF r1 = s.getRect();
-        RectF r2 = spaceShip.getRect();
+        RectF r2 = redShip.getRect();
         if (r1.intersect(r2)){
-            spaceShip.gotHit(s.getPower());
-            spaceShip.reducePowers();
-            if(spaceShip.isDead()){
-                shipExplode.start();
+            redShip.gotHit(s.getPower());
+            redShip.reducePowers();
+            vibrate.vibrate(150);
+            if(redShip.isDead()){
                 loseGame();
             }
             removeShot(s);
@@ -394,7 +438,10 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    i.move("left");
+                                    if(isMultiplayer && wifiP2pInfo.isGroupOwner)
+                                        i.move("right");
+                                    else
+                                        i.move("left");
                                 }
                             });
                         }
@@ -409,7 +456,11 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    i.move("right");
+                                    if(isMultiplayer && wifiP2pInfo.isGroupOwner)
+                                        i.move("right");
+                                    else
+                                        i.move("left");
+
                                 }
                             });
                         }
@@ -452,7 +503,8 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                spaceShip.die();
+                redShip.die();
+                shipExplode.start();
                 endGame();
             }
         });
@@ -467,15 +519,15 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     }
 
     private void updateLives(){
-        if (shipLives.size() > spaceShip.getHealth()){
+        if (shipLives.size() > redShip.getHealth()){
             removeShipLive();
-        }else if (shipLives.size() < spaceShip.getHealth()){
+        }else if (shipLives.size() < redShip.getHealth()){
             drawShipLive();
         }
     }
 
     private void drawShipLive(){
-        for (int i=shipLives.size(); i<spaceShip.getHealth() ; i++){
+        for (int i=shipLives.size(); i< redShip.getHealth() ; i++){
             final ImageView live = new ImageView(this);
             live.setBackgroundResource(R.drawable.live);
             double length = metrics.heightPixels*0.1;
@@ -496,7 +548,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     }
 
     private void removeShipLive(){
-        for (int i=(int)spaceShip.getHealth(); i<shipLives.size() ; i++){
+        for (int i=(int) redShip.getHealth(); i<shipLives.size() ; i++){
             final ImageView live = shipLives.get(i);
             runOnUiThread(new Runnable() {
                 @Override
@@ -527,18 +579,18 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
 
         if (curMovement >1) {
             if(curMovement>2){
-                spaceShip.move("right3");
+                redShip.move("right3");
             }else {
-                spaceShip.move("right2");
+                redShip.move("right2");
             }
         }else if(curMovement<-1){
             if(curMovement<-2){
-                spaceShip.move("left3");
+                redShip.move("left3");
             }else {
-                spaceShip.move("left2");
+                redShip.move("left2");
             }
         }else{
-            spaceShip.move("middle");
+            redShip.move("middle");
         }
     }
 
@@ -550,7 +602,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     public boolean onTouchEvent(MotionEvent event) {
         long time = event.getDownTime();
         if(!isActivityPaused && isStartAnimationDone && time-lastShootTime > SHOOT_DELAY ) {
-            Shot s = spaceShip.fire();
+            Shot s = redShip.fire();
             shipShoots.add(s);
             s.bringToFront();
             rl.addView(s);
@@ -627,5 +679,107 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             return true;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    public class ServerSocketThread  extends Thread {
+        @Override
+        public void run() {
+            try {
+                server = new ServerSocket(WiFiDirectReceiver.PORT, 1);
+                while (true) {
+                    try {
+                        connection = server.accept();
+                        output = new ObjectOutputStream(connection.getOutputStream());
+                        output.flush();
+                        input = new ObjectInputStream(connection.getInputStream());
+                        checkInputWhilePlay();
+                    } catch (EOFException eofException) {
+                        Toast.makeText(SinglePlayerGame.this, "Connection closed", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                    finally {
+                        output.close();
+                        input.close();
+                        connection.close();
+                        try {
+                            Thread.sleep(5);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            } catch (IOException ioException){
+                ioException.printStackTrace();
+                finish();
+            }
+        }
+    }
+
+    public class ClientSocketThread extends Thread{
+        @Override
+        public void run() {
+            try {
+                connection = new Socket(wifiP2pInfo.groupOwnerAddress, WiFiDirectReceiver.PORT);
+                output = new ObjectOutputStream(connection.getOutputStream());
+                output.flush();
+                input = new ObjectInputStream(connection.getInputStream());
+                checkInputWhilePlay();
+            } catch (EOFException eofException) {
+                Toast.makeText(SinglePlayerGame.this, "Connection closed", Toast.LENGTH_SHORT).show();
+                finish();
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+                finish();
+            } finally {
+                try {
+                    output.close();
+                    input.close();
+                    connection.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    Thread.sleep(5);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public void checkInputWhilePlay() throws IOException{
+        Object message = "";
+        do{
+            try{
+                message = input.readObject();
+                if (message instanceof Shot){
+                    Shot s = blueShip.fire();
+                    shipShoots.add(s);
+                    s.bringToFront();
+                    rl.addView(s);
+                }else if (message instanceof String && !message.equals("")){
+                    if (message.equals("enemy is dead")){
+                        winGame();
+                    }else{
+                        blueShip.move((String)message);
+                    }
+                }
+            }
+            catch (ClassNotFoundException classNotFoundException){
+                classNotFoundException.printStackTrace();
+            }
+        }while(!message.toString().equals("END"));
+    }
+
+    public void sendWifiMessage(Object message){
+        try{
+            output.writeObject(message);
+            output.flush();
+        }
+        catch (IOException ioException){
+            ioException.printStackTrace();
+            Toast.makeText(SinglePlayerGame.this, "Connection Lost, Exit game", Toast.LENGTH_SHORT).show();
+            finish();
+        }
     }
 }
