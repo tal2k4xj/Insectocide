@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import java.io.IOException;
 
+import insectocide.game.MultiplayerGame;
 import insectocide.game.SinglePlayerGame;
 
 public class WiFiDirectReceiver extends BroadcastReceiver implements WifiP2pManager.PeerListListener, WifiP2pManager.ConnectionInfoListener {
@@ -96,8 +97,7 @@ public class WiFiDirectReceiver extends BroadcastReceiver implements WifiP2pMana
     @Override
     public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
         if(wifiP2pInfo.groupFormed){
-            Intent intent = new Intent(activity, SinglePlayerGame.class);
-            intent.putExtra("MULTIPLAYER", true);
+            Intent intent = new Intent(activity, MultiplayerGame.class);
             intent.putExtra("WIFI_P2P_INFO", wifiP2pInfo);
             activity.startActivity(intent);
         }
