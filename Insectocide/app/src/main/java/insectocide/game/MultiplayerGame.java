@@ -25,6 +25,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
@@ -39,6 +40,7 @@ import insectocide.logic.WiFiDirectReceiver;
 public class MultiplayerGame extends Activity implements SensorEventListener{
     private final String DEFAULT_PLAYER_SHIP_COLOR = "red";
     private final String DEFAULT_OPPONENT_COLOR = "blue";
+    private final int SOCKET_TIMEOUT = 5000;
     private final int INSECTS_ROWS = 5;
     private final int INSECTS_COLS = 10;
     private final long SHOOT_DELAY = 800;
@@ -605,7 +607,8 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         @Override
         public void run() {
             try {
-                connection = new Socket(wifiP2pInfo.groupOwnerAddress, WiFiDirectReceiver.PORT);
+                //connection = new Socket(wifiP2pInfo.groupOwnerAddress, WiFiDirectReceiver.PORT);
+                connection.connect((new InetSocketAddress(wifiP2pInfo.groupOwnerAddress, WiFiDirectReceiver.PORT)), SOCKET_TIMEOUT);
                 output = new ObjectOutputStream(connection.getOutputStream());
                 output.flush();
                 input = new ObjectInputStream(connection.getInputStream());

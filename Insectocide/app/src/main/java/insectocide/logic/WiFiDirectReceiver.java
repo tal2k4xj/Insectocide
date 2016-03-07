@@ -20,7 +20,7 @@ import insectocide.game.SinglePlayerGame;
 
 public class WiFiDirectReceiver extends BroadcastReceiver implements WifiP2pManager.PeerListListener, WifiP2pManager.ConnectionInfoListener {
 
-    public static final int PORT = 4545;
+    public static final int PORT = 7890;
     public boolean isWifiDirectEnabled;
     private WifiP2pManager wfdManager;
     private WifiP2pManager.Channel wfdChannel;
