@@ -143,7 +143,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     }
 
     private void initInsects(){
-        InsectsProvider insectsProvider = new InsectsProvider(INSECTS_ROWS, INSECTS_COLS, this, metrics);
+        InsectsProvider insectsProvider = new InsectsProvider(INSECTS_ROWS, INSECTS_COLS, "multi", this, metrics);
         liveInsects = insectsProvider.getLiveInsectsList();
         insects = insectsProvider.getInsectMatrix();
         for (Insect insect: liveInsects) {
@@ -264,6 +264,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                                     }
                                 });
                                 checkIfInsectHit(s);
+                                checkIfShipHit(s);
                             }else{
                                 removeShot(s);
                             }
@@ -284,21 +285,25 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         for(final Insect insect:liveInsects){
             RectF r2 = insect.getRect();
             if (r1.intersect(r2)) {
+                final String shipColor = shot.getEntity().getColor();
                 insect.gotHit(shot.getPower());
                 if (insect.isDead()) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             insect.die();
-                            showInsectBonus(insect);
+                            if (shipColor.equals(DEFAULT_PLAYER_SHIP_COLOR)) {
+                                showInsectBonus(insect);
+                            }
                             bugDie.start();
                         }
                     });
-                    playerShip.getPowerFromInsect(insect.getType());
+                    if (shipColor.equals(DEFAULT_PLAYER_SHIP_COLOR)) {
+                        playerShip.getPowerFromInsect(insect.getType());
+                    } else {
+                        opponentShip.getPowerFromInsect(insect.getType());
+                    }
                     liveInsects.remove(insect);
-                }
-                if (liveInsects.size()==0){
-                    winGame();
                 }
                 removeShot(shot);
             }
@@ -329,11 +334,9 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                new Handler().postDelayed(new Runnable() {
-                    public void run() {
-                        playerShip.win();
-                    }
-                }, 300);
+                opponentShip.die();
+                shipExplode.start();
+                playerShip.win();
                 endGame();
             }
         });
@@ -343,20 +346,28 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
 
     }
 
-
-    private int getNumOfKilledInsects() {
-        return (INSECTS_COLS*INSECTS_ROWS)-liveInsects.size();
-    }
-
     private void checkIfShipHit(Shot s){
         RectF r1 = s.getRect();
         RectF r2 = playerShip.getRect();
+        RectF r3 = opponentShip.getRect();
         if (r1.intersect(r2)){
             playerShip.gotHit(s.getPower());
-            playerShip.reducePowers();
+            if(s.getEntity() instanceof Insect) {
+                playerShip.reducePowers();
+            }
             vibrate.vibrate(150);
             if(playerShip.isDead()){
                 loseGame();
+            }
+            removeShot(s);
+        }
+        if (r1.intersect(r3)){
+            opponentShip.gotHit(s.getPower());
+            if(s.getEntity() instanceof Insect) {
+                opponentShip.reducePowers();
+            }
+            if(opponentShip.isDead()){
+                winGame();
             }
             removeShot(s);
         }
@@ -390,7 +401,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    if(wifiP2pInfo.isGroupOwner)
+                                    if(!wifiP2pInfo.isGroupOwner)
                                         i.move("right");
                                     else
                                         i.move("left");
@@ -415,14 +426,15 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
             }
 
             private int calcInsectSpeed() {
+                int numbOfStartInsects = INSECTS_COLS*INSECTS_ROWS;
                 int numOfInsects = liveInsects.size();
-                if (numOfInsects>=25){
+                if (numOfInsects>=numbOfStartInsects*0.8){
                     return 200;
-                }else if(numOfInsects>=20){
+                }else if(numOfInsects>=numbOfStartInsects*0.6){
                     return 180;
-                }else if(numOfInsects>=15){
+                }else if(numOfInsects>=numbOfStartInsects*0.4){
                     return 150;
-                }else if(numOfInsects>=10){
+                }else if(numOfInsects>=numbOfStartInsects*0.2){
                     return 120;
                 }else {
                     return 100;
@@ -439,6 +451,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
             public void run() {
                 playerShip.die();
                 shipExplode.start();
+                opponentShip.win();
                 endGame();
             }
         });

@@ -15,11 +15,13 @@ public class InsectsProvider {
     private int rows,cols;
     private Context context;
     private DisplayMetrics metrics;
-    Random rand;
+    private String mode;
+    private Random rand;
 
-    public InsectsProvider(int rows, int cols, Context context, DisplayMetrics metrics) {
-        this.rows=rows;
-        this.cols=cols;
+    public InsectsProvider(int rows, int cols,String mode, Context context, DisplayMetrics metrics) {
+        this.rows = rows;
+        this.cols = cols;
+        this.mode = mode;
         this.context = context;
         this.metrics = metrics;
         insects = new Insect[cols][rows];
@@ -30,15 +32,21 @@ public class InsectsProvider {
     }
 
     private Insect[][] generateInsects(){
-
         CreateInsectTypes();
         for (int i=0 ; i < cols ; i++){
             for(int j=0 ; j < rows ; j++){
-                insects[i][j] = new Insect(pickRandomTypeFromList(),context,metrics);
+                if(mode.equals("single")) {
+                    insects[i][j] = new Insect(pickRandomTypeFromList(), "down", context, metrics);
+                }else{
+                    if((i%2 == 0 && i%2 == 0) || (i%2 == 1 && j%2 == 1)) {
+                        insects[i][j] = new Insect(pickRandomTypeFromList(), "down", context, metrics);
+                    }else {
+                        insects[i][j] = new Insect(pickRandomTypeFromList(), "up", context, metrics);
+                    }
+                }
                 insects[i][j].setPositionAndDimensions(i,j);
                 insects[i][j].bringToFront();
                 liveInsects.add(insects[i][j]);
-               // rl.addView(insects[i][j]); need to add in code;
             }
         }
         return insects;

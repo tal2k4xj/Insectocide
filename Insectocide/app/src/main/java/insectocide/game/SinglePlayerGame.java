@@ -138,7 +138,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     }
 
     private void initInsects(){
-        InsectsProvider insectsProvider = new InsectsProvider(INSECTS_ROWS, INSECTS_COLS, this, metrics);
+        InsectsProvider insectsProvider = new InsectsProvider(INSECTS_ROWS, INSECTS_COLS,"single", this, metrics);
         liveInsects = insectsProvider.getLiveInsectsList();
         insects = insectsProvider.getInsectMatrix();
         for (Insect insect: liveInsects) {
@@ -440,14 +440,15 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             }
 
             private int calcInsectSpeed() {
+                int numbOfStartInsects = INSECTS_COLS*INSECTS_ROWS;
                 int numOfInsects = liveInsects.size();
-                if (numOfInsects>=25){
+                if (numOfInsects>=numbOfStartInsects*0.8){
                     return 200;
-                }else if(numOfInsects>=20){
+                }else if(numOfInsects>=numbOfStartInsects*0.6){
                     return 180;
-                }else if(numOfInsects>=15){
+                }else if(numOfInsects>=numbOfStartInsects*0.4){
                     return 150;
-                }else if(numOfInsects>=10){
+                }else if(numOfInsects>=numbOfStartInsects*0.2){
                     return 120;
                 }else {
                     return 100;
