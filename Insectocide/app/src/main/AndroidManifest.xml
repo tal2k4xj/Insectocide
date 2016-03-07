@@ -66,6 +66,12 @@
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen" >
         </activity>
         <activity
+            android:name=".MultiplayerGame"
+            android:hardwareAccelerated="true"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen" >
+        </activity>
+        <activity
             android:name=".ScoreBoardMenu"
             android:hardwareAccelerated="false"
             android:screenOrientation="landscape"
