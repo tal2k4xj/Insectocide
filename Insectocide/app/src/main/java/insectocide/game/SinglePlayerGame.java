@@ -49,8 +49,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     private final int INSECTS_COLS = 10;
     private final long SHOOT_DELAY = 800;
     private final long START_ANIMATION_DELAY = 7200;
-    private boolean isMultiplayer = false;
-    private WifiP2pInfo wifiP2pInfo;
     private MediaPlayer shipStart;
     private MediaPlayer shootSound;
     private MediaPlayer shipExplode;
@@ -80,13 +78,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     private ImageButton pauseButton;
     private String playerName;
     private Vibrator vibrate;
-    private ServerSocket server;
-    private Socket connection;
-    private ObjectOutputStream output;
-    private ObjectInputStream input;
-    private ServerSocketThread serverThread;
-    private ClientSocketThread clientThread;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,12 +104,6 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         shipExplode = MediaPlayer.create(this, R.raw.shipexplode);
         bugDie = MediaPlayer.create(this, R.raw.bugdie);
 
-        Bundle extras = getIntent().getExtras();
-        isMultiplayer = extras.getBoolean("MULTIPLAYER");
-        if(isMultiplayer)
-            wifiP2pInfo = (WifiP2pInfo)extras.get("WIFI_P2P_INFO");
-        initMultiplayer();
-
         initShip();
         updateLives();
         initInsects();
@@ -142,29 +127,10 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     @Override
     protected void onStart(){
         super.onStart();
-        if(!isMultiplayer)
-            resumePauseGame();
-    }
-
-    private void initMultiplayer(){
-        if(isMultiplayer) {
-            connection = new Socket();
-            if (wifiP2pInfo.isGroupOwner) {
-                serverThread = new ServerSocketThread();
-                serverThread.run();
-            } else {
-                clientThread = new ClientSocketThread();
-                clientThread.run();
-            }
-        }
+        resumePauseGame();
     }
 
     private void initShip(){
-        if(isMultiplayer){
-            blueShip = new SpaceShip("blue", this , metrics);
-            redShip.bringToFront();
-            rl.addView(blueShip);
-        }
         redShip = new SpaceShip(DEFAULT_COLOR, this , metrics);
         redShip.bringToFront();
         rl.addView(redShip);
@@ -438,10 +404,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    if(isMultiplayer && wifiP2pInfo.isGroupOwner)
-                                        i.move("right");
-                                    else
-                                        i.move("left");
+                                    i.move("left");
                                 }
                             });
                         }
@@ -456,11 +419,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    if(isMultiplayer && wifiP2pInfo.isGroupOwner)
-                                        i.move("right");
-                                    else
-                                        i.move("left");
-
+                                    i.move("right");
                                 }
                             });
                         }
@@ -679,107 +638,5 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             return true;
         }
         return super.onKeyDown(keyCode, event);
-    }
-
-    public class ServerSocketThread  extends Thread {
-        @Override
-        public void run() {
-            try {
-                server = new ServerSocket(WiFiDirectReceiver.PORT, 1);
-                while (true) {
-                    try {
-                        connection = server.accept();
-                        output = new ObjectOutputStream(connection.getOutputStream());
-                        output.flush();
-                        input = new ObjectInputStream(connection.getInputStream());
-                        checkInputWhilePlay();
-                    } catch (EOFException eofException) {
-                        Toast.makeText(SinglePlayerGame.this, "Connection closed", Toast.LENGTH_SHORT).show();
-                        finish();
-                    }
-                    finally {
-                        output.close();
-                        input.close();
-                        connection.close();
-                        try {
-                            Thread.sleep(5);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            } catch (IOException ioException){
-                ioException.printStackTrace();
-                finish();
-            }
-        }
-    }
-
-    public class ClientSocketThread extends Thread{
-        @Override
-        public void run() {
-            try {
-                connection = new Socket(wifiP2pInfo.groupOwnerAddress, WiFiDirectReceiver.PORT);
-                output = new ObjectOutputStream(connection.getOutputStream());
-                output.flush();
-                input = new ObjectInputStream(connection.getInputStream());
-                checkInputWhilePlay();
-            } catch (EOFException eofException) {
-                Toast.makeText(SinglePlayerGame.this, "Connection closed", Toast.LENGTH_SHORT).show();
-                finish();
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-                finish();
-            } finally {
-                try {
-                    output.close();
-                    input.close();
-                    connection.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    Thread.sleep(5);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    public void checkInputWhilePlay() throws IOException{
-        Object message = "";
-        do{
-            try{
-                message = input.readObject();
-                if (message instanceof Shot){
-                    Shot s = blueShip.fire();
-                    shipShoots.add(s);
-                    s.bringToFront();
-                    rl.addView(s);
-                }else if (message instanceof String && !message.equals("")){
-                    if (message.equals("enemy is dead")){
-                        winGame();
-                    }else{
-                        blueShip.move((String)message);
-                    }
-                }
-            }
-            catch (ClassNotFoundException classNotFoundException){
-                classNotFoundException.printStackTrace();
-            }
-        }while(!message.toString().equals("END"));
-    }
-
-    public void sendWifiMessage(Object message){
-        try{
-            output.writeObject(message);
-            output.flush();
-        }
-        catch (IOException ioException){
-            ioException.printStackTrace();
-            Toast.makeText(SinglePlayerGame.this, "Connection Lost, Exit game", Toast.LENGTH_SHORT).show();
-            finish();
-        }
     }
 }
