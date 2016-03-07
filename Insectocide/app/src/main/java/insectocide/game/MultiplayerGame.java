@@ -1,7 +1,657 @@
 package insectocide.game;
 
-/**
- * Created by Zukis87 on 20/02/2016.
- */
-public class MultiplayerGame {
+
+import android.app.Activity;
+import android.graphics.RectF;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.media.MediaPlayer;
+import android.net.wifi.p2p.WifiP2pInfo;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Vibrator;
+import android.util.DisplayMetrics;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
+
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
+import insectocide.logic.Insect;
+import insectocide.logic.InsectsProvider;
+import insectocide.logic.Shot;
+import insectocide.logic.SpaceShip;
+import insectocide.logic.WiFiDirectReceiver;
+
+public class MultiplayerGame extends Activity implements SensorEventListener{
+    private final String DEFAULT_COLOR = "red";
+    private final int INSECTS_ROWS = 5;
+    private final int INSECTS_COLS = 10;
+    private final long SHOOT_DELAY = 800;
+    private final long START_ANIMATION_DELAY = 7200;
+    private WifiP2pInfo wifiP2pInfo;
+    private MediaPlayer shipStart;
+    private MediaPlayer shootSound;
+    private MediaPlayer shipExplode;
+    private MediaPlayer bugDie;
+    private Sensor accelerometer;
+    private SensorManager sm;
+    private SpaceShip redShip;
+    private SpaceShip blueShip;
+    private DisplayMetrics metrics;
+    private Insect insects[][];
+    private List<Shot> shipShoots;
+    private List<Shot> insectsShoots;
+    private List<Insect> liveInsects;
+    private List<ImageView> shipLives;
+    private RelativeLayout rl;
+    private long lastShootTime = 0;
+    private boolean isActivityPaused = false;
+    private boolean isStartAnimationDone = false;
+    private boolean moveLeft = true;
+    private Thread insectShots;
+    private Thread moveShots;
+    private Thread moveInsects;
+    private Vibrator vibrate;
+    private ServerSocket server;
+    private Socket connection;
+    private ObjectOutputStream output;
+    private ObjectInputStream input;
+    private ServerSocketThread serverThread;
+    private ClientSocketThread clientThread;
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_multiplayer_game);
+        shipShoots = new CopyOnWriteArrayList<>();
+        insectsShoots = new CopyOnWriteArrayList<>();
+        shipLives = new CopyOnWriteArrayList<>();
+        metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        rl = (RelativeLayout)findViewById(R.id.MultiplayerLayout);
+
+        vibrate = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+
+        shootSound = MediaPlayer.create(this, R.raw.shoot);
+        shipStart = MediaPlayer.create(this, R.raw.shipstart);
+        shipExplode = MediaPlayer.create(this, R.raw.shipexplode);
+        bugDie = MediaPlayer.create(this, R.raw.bugdie);
+
+        Bundle extras = getIntent().getExtras();
+        wifiP2pInfo = (WifiP2pInfo)extras.get("WIFI_P2P_INFO");
+        initMultiplayer();
+
+        initShip();
+        updateLives();
+        initInsects();
+        startReadyGoAnimation();
+        initWithRestWithStartDelay();
+    }
+
+    private void initWithRestWithStartDelay() {
+        new Handler().postDelayed(new Runnable() {
+            public void run() {
+                isStartAnimationDone = true;
+                initAccelerometer();
+                initMoveInsectsThread();
+                initMoveShotsThread();
+                startInsectsShotsThread();
+            }
+        }, START_ANIMATION_DELAY);
+    }
+
+    @Override
+    protected void onStart(){
+        super.onStart();
+    }
+
+    private void initMultiplayer(){
+        connection = new Socket();
+        if (wifiP2pInfo.isGroupOwner) {
+            serverThread = new ServerSocketThread();
+            serverThread.run();
+        } else {
+            clientThread = new ClientSocketThread();
+            clientThread.run();
+        }
+    }
+
+    private void initShip(){
+        blueShip = new SpaceShip("blue", this , metrics);
+        redShip.bringToFront();
+        rl.addView(blueShip);
+        redShip = new SpaceShip(DEFAULT_COLOR, this , metrics);
+        redShip.bringToFront();
+        rl.addView(redShip);
+        shipStart.start();
+    }
+
+    private void initInsects(){
+        InsectsProvider insectsProvider = new InsectsProvider(INSECTS_ROWS, INSECTS_COLS, this, metrics);
+        liveInsects = insectsProvider.getLiveInsectsList();
+        insects = insectsProvider.getInsectMatrix();
+        for (Insect insect: liveInsects) {
+            rl.addView(insect);
+        }
+    }
+
+    private void initAccelerometer() {
+        sm=(SensorManager)getSystemService(SENSOR_SERVICE);
+        accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sm.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
+    }
+
+    private void unRegisterAccelerometer(){
+        sm.unregisterListener(this, accelerometer);
+    }
+
+    public void startReadyGoAnimation(){
+        readyGo("ready");
+        new Handler().postDelayed(new Runnable() {
+            public void run() {
+                readyGo("go");
+            }
+        }, 4500);
+    }
+
+    public void readyGo(String image){
+        final ImageView readyGo = new ImageView(this);
+        int drawableId = getResources().getIdentifier(image, "drawable", "insectocide.game");
+        readyGo.setBackgroundResource(drawableId);
+        final double width = metrics.heightPixels*0.3*2;
+        double height = metrics.heightPixels*0.3;
+        readyGo.setLayoutParams(new ViewGroup.LayoutParams((int) width, (int) height));
+        double y = metrics.heightPixels*0.35;
+        readyGo.setY((float) y);
+        readyGo.setX((float) (-width));
+        readyGo.bringToFront();
+        readyGo.setVisibility(View.VISIBLE);
+        rl.addView(readyGo);
+        readyGo.animate().x((float) (readyGo.getX() + metrics.widthPixels * 0.5 + width / 2));
+        readyGo.animate().setDuration(500);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                readyGo.animate().x((float) (readyGo.getX() + metrics.widthPixels * 0.5 + width / 2));
+                readyGo.animate().setDuration(500);
+            }
+        }, 2500);
+    }
+
+    private synchronized void startInsectsShotsThread(){
+        insectShots = new Thread(new Runnable() {
+            public void run() {
+                while (!isActivityPaused && !liveInsects.isEmpty()) {
+                    try {
+                        Random rand = new Random();
+                        int i = rand.nextInt(liveInsects.size());
+                        final Insect insect = liveInsects.get(i);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Shot s = insect.fire();
+                                s.bringToFront();
+                                rl.addView(s);
+                                insectsShoots.add(s);
+                            }
+                        });
+                        int timeToSleep = calculateInsectShootingTime();
+                        Thread.sleep(timeToSleep);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            private int calculateInsectShootingTime() {
+                int numOfInsects = liveInsects.size();
+                if (numOfInsects>=25){
+                    return 450;
+                }else if(numOfInsects>=20){
+                    return 800;
+                }else if(numOfInsects>=15){
+                    return 1300;
+                }else if(numOfInsects>=10){
+                    return 1800;
+                }else {
+                    return 2500;
+                }
+            }
+        });
+        insectShots.start();
+    }
+
+    private synchronized void initMoveShotsThread() {
+        moveShots = new Thread(new Runnable() {
+            public void run() {
+                while (!isActivityPaused) {
+                    try{
+                        for (final Shot s : insectsShoots) {
+                            if(!s.isOutOfScreen()) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        s.shoot();
+                                    }
+                                });
+                                checkIfShipHit(s);
+                            }else{
+                                removeShot(s);
+                            }
+                        }
+                        for (final Shot s : shipShoots) {
+                            if(!s.isOutOfScreen()) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        s.shoot();
+                                    }
+                                });
+                                checkIfInsectHit(s);
+                            }else{
+                                removeShot(s);
+                            }
+                        }
+                        updateLives();
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        moveShots.start();
+    }
+
+    private void checkIfInsectHit(Shot shot){
+        RectF r1 = shot.getRect();
+        for(final Insect insect:liveInsects){
+            RectF r2 = insect.getRect();
+            if (r1.intersect(r2)) {
+                insect.gotHit(shot.getPower());
+                if (insect.isDead()) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            insect.die();
+                            showInsectBonus(insect);
+                            bugDie.start();
+                        }
+                    });
+                    redShip.getPowerFromInsect(insect.getType());
+                    liveInsects.remove(insect);
+                }
+                if (liveInsects.size()==0){
+                    winGame();
+                }
+                removeShot(shot);
+            }
+        }
+    }
+
+    private void showInsectBonus(Insect insect){
+        final ImageView bonus = new ImageView(this);
+        int drawableId = getResources().getIdentifier(insect.getType().getColor().toLowerCase()+"_bonus" , "drawable", "insectocide.game");
+        bonus.setBackgroundResource(drawableId);
+        double length = metrics.heightPixels*0.1;
+        bonus.setLayoutParams(new ViewGroup.LayoutParams((int) length, (int) length));
+        bonus.setY(insect.getY());
+        bonus.setX(insect.getX());
+        bonus.bringToFront();
+        bonus.setVisibility(View.VISIBLE);
+        rl.addView(bonus);
+        bonus.animate().y(bonus.getY() - 100);
+        bonus.animate().setDuration(3000);
+        new Handler().postDelayed(new Runnable() {
+            public void run() {
+                rl.removeView(bonus);
+            }
+        }, 3000);
+    }
+
+    private void winGame() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                new Handler().postDelayed(new Runnable() {
+                    public void run() {
+                        redShip.win();
+                    }
+                }, 300);
+                endGame();
+            }
+        });
+    }
+
+    private void endGame() {
+
+    }
+
+
+    private int getNumOfKilledInsects() {
+        return (INSECTS_COLS*INSECTS_ROWS)-liveInsects.size();
+    }
+
+    private void checkIfShipHit(Shot s){
+        RectF r1 = s.getRect();
+        RectF r2 = redShip.getRect();
+        if (r1.intersect(r2)){
+            redShip.gotHit(s.getPower());
+            redShip.reducePowers();
+            vibrate.vibrate(150);
+            if(redShip.isDead()){
+                loseGame();
+            }
+            removeShot(s);
+        }
+    }
+    private synchronized void initMoveInsectsThread(){
+        moveInsects = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(!isActivityPaused && !liveInsects.isEmpty()) {
+                    Insect first,last;
+                    if (moveLeft) {
+                        for (final Insect i : liveInsects) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if(wifiP2pInfo.isGroupOwner)
+                                        i.move("right");
+                                    else
+                                        i.move("left");
+                                }
+                            });
+                        }
+                        first = liveInsects.get(0);
+                        if(first.getX() > 0){
+                            moveLeft= true;
+                        }else{
+                            moveLeft=false;
+                        }
+                    } else{ //move right
+                        for (final Insect i : liveInsects) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if(wifiP2pInfo.isGroupOwner)
+                                        i.move("right");
+                                    else
+                                        i.move("left");
+
+                                }
+                            });
+                        }
+                        last = liveInsects.get(liveInsects.size() - 1);
+                        if (last.getX() + last.getWidth() < metrics.widthPixels){
+                            moveLeft = false;
+                        }else{
+                            moveLeft = true;
+                        }
+                    }
+                    int insectSpeed = calcInsectSpeed();
+                    try {
+                        Thread.sleep(insectSpeed);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            private int calcInsectSpeed() {
+                int numOfInsects = liveInsects.size();
+                if (numOfInsects>=25){
+                    return 200;
+                }else if(numOfInsects>=20){
+                    return 180;
+                }else if(numOfInsects>=15){
+                    return 150;
+                }else if(numOfInsects>=10){
+                    return 120;
+                }else {
+                    return 100;
+                }
+            }
+        });
+
+        moveInsects.start();
+    }
+
+    private void loseGame() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                redShip.die();
+                shipExplode.start();
+                endGame();
+            }
+        });
+    }
+
+    private void removeShot(Shot s) {
+        removeView(s);
+        if (s.getEntity() instanceof SpaceShip){
+            shipShoots.remove(s);
+        }else
+            insectsShoots.remove(s);
+    }
+
+    private void updateLives(){
+        if (shipLives.size() > redShip.getHealth()){
+            removeShipLive();
+        }else if (shipLives.size() < redShip.getHealth()){
+            drawShipLive();
+        }
+    }
+
+    private void drawShipLive(){
+        for (int i=shipLives.size(); i< redShip.getHealth() ; i++){
+            final ImageView live = new ImageView(this);
+            live.setBackgroundResource(R.drawable.live);
+            double length = metrics.heightPixels*0.1;
+            live.setLayoutParams(new ViewGroup.LayoutParams((int) length, (int) length));
+            live.setY(0);
+            double x = i*length;
+            live.setX((float) x);
+            live.bringToFront();
+            live.setVisibility(View.VISIBLE);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    rl.addView(live);
+                }
+            });
+            shipLives.add(live);
+        }
+    }
+
+    private void removeShipLive(){
+        for (int i=(int) redShip.getHealth(); i<shipLives.size() ; i++){
+            final ImageView live = shipLives.get(i);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    rl.removeView(live);
+                }
+            });
+            shipLives.remove(live);
+        }
+    }
+
+    private void removeView(final ImageView v){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                rl.removeView(v);
+            }
+        });
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        float curMovement = event.values[1];
+        moveShip(curMovement);
+    }
+
+    private void moveShip(float curMovement) {
+
+        if (curMovement >1) {
+            if(curMovement>2){
+                redShip.move("right3");
+            }else {
+                redShip.move("right2");
+            }
+        }else if(curMovement<-1){
+            if(curMovement<-2){
+                redShip.move("left3");
+            }else {
+                redShip.move("left2");
+            }
+        }else{
+            redShip.move("middle");
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
+
+    public boolean onTouchEvent(MotionEvent event) {
+        long time = event.getDownTime();
+        if(!isActivityPaused && isStartAnimationDone && time-lastShootTime > SHOOT_DELAY ) {
+            Shot s = redShip.fire();
+            shipShoots.add(s);
+            s.bringToFront();
+            rl.addView(s);
+            lastShootTime = time;
+            shootSound.start();
+        }
+        return false;
+    }
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
+            finish();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    public class ServerSocketThread  extends Thread {
+        @Override
+        public void run() {
+            try {
+                server = new ServerSocket(WiFiDirectReceiver.PORT, 1);
+                while (true) {
+                    try {
+                        connection = server.accept();
+                        output = new ObjectOutputStream(connection.getOutputStream());
+                        output.flush();
+                        input = new ObjectInputStream(connection.getInputStream());
+                        checkInputWhilePlay();
+                    } catch (EOFException eofException) {
+                        Toast.makeText(MultiplayerGame.this, "Connection closed", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                    finally {
+                        output.close();
+                        input.close();
+                        connection.close();
+                        try {
+                            Thread.sleep(5);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            } catch (IOException ioException){
+                ioException.printStackTrace();
+                finish();
+            }
+        }
+    }
+
+    public class ClientSocketThread extends Thread{
+        @Override
+        public void run() {
+            try {
+                connection = new Socket(wifiP2pInfo.groupOwnerAddress, WiFiDirectReceiver.PORT);
+                output = new ObjectOutputStream(connection.getOutputStream());
+                output.flush();
+                input = new ObjectInputStream(connection.getInputStream());
+                checkInputWhilePlay();
+            } catch (EOFException eofException) {
+                Toast.makeText(MultiplayerGame.this, "Connection closed", Toast.LENGTH_SHORT).show();
+                finish();
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+                finish();
+            } finally {
+                try {
+                    output.close();
+                    input.close();
+                    connection.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    Thread.sleep(5);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public void checkInputWhilePlay() throws IOException{
+        Object message = "";
+        do{
+            try{
+                message = input.readObject();
+                if (message instanceof Shot){
+                    Shot s = blueShip.fire();
+                    shipShoots.add(s);
+                    s.bringToFront();
+                    rl.addView(s);
+                }else if (message instanceof String && !message.equals("")){
+                    if (message.equals("enemy is dead")){
+                        winGame();
+                    }else{
+                        blueShip.move((String)message);
+                    }
+                }
+            }
+            catch (ClassNotFoundException classNotFoundException){
+                classNotFoundException.printStackTrace();
+            }
+        }while(!message.toString().equals("END"));
+    }
+
+    public void sendWifiMessage(Object message){
+        try{
+            output.writeObject(message);
+            output.flush();
+        }
+        catch (IOException ioException){
+            ioException.printStackTrace();
+            Toast.makeText(MultiplayerGame.this, "Connection Lost, Exit game", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
 }
