@@ -10,13 +10,8 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
-import android.util.Log;
 import android.widget.Toast;
-
-import java.io.IOException;
-
 import insectocide.game.MultiplayerGame;
-import insectocide.game.SinglePlayerGame;
 
 public class WiFiDirectReceiver extends BroadcastReceiver implements WifiP2pManager.PeerListListener, WifiP2pManager.ConnectionInfoListener {
 

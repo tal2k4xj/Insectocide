@@ -573,7 +573,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         @Override
         public void run() {
             try {
-                server = new ServerSocket(WiFiDirectReceiver.PORT, 1);
+                server = new ServerSocket(WiFiDirectReceiver.PORT);
                 while (true) {
                     try {
                         connection = server.accept();
@@ -607,7 +607,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         @Override
         public void run() {
             try {
-                //connection = new Socket(wifiP2pInfo.groupOwnerAddress, WiFiDirectReceiver.PORT);
                 connection.connect((new InetSocketAddress(wifiP2pInfo.groupOwnerAddress, WiFiDirectReceiver.PORT)), SOCKET_TIMEOUT);
                 output = new ObjectOutputStream(connection.getOutputStream());
                 output.flush();
