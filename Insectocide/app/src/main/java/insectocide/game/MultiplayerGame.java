@@ -1,6 +1,5 @@
 package insectocide.game;
 
-
 import android.app.Activity;
 import android.graphics.RectF;
 import android.hardware.Sensor;
@@ -25,7 +24,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
@@ -113,7 +111,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                 initAccelerometer();
                 initMoveInsectsThread();
                 initMoveShotsThread();
-                startInsectsShotsThread();
+                //startInsectsShotsThread();
             }
         }, START_ANIMATION_DELAY);
     }
@@ -350,7 +348,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     }
 
     private void endGame() {
-
+        unRegisterAccelerometer();
     }
 
     private void checkIfShipHit(Shot s){
@@ -562,6 +560,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         long time = event.getDownTime();
         if(!isActivityPaused && isStartAnimationDone && time-lastShootTime > SHOOT_DELAY ) {
             Shot s = playerShip.fire();
+            sendWifiMessage(s);
             shipsShoots.add(s);
             s.bringToFront();
             rl.addView(s);
@@ -645,7 +644,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         }
     }
 
-    public void checkInputWhilePlay() throws IOException{
+    public synchronized void checkInputWhilePlay() throws IOException{
         Object message = "";
         do{
             try{
