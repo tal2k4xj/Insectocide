@@ -51,7 +51,7 @@ public class Insect extends SpaceEntity {
         if (rows == SINGLE_PLAYER_ROWS) {
             y = metrics.heightPixels * 0.35 + j * height;
         }else{
-            y = metrics.heightPixels * 0.275 + j * height;
+            y = metrics.heightPixels * 0.32 + j * height;
         }
         setY((float) y);
         setX((float)x);

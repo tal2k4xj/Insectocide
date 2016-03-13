@@ -39,7 +39,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private final String DEFAULT_PLAYER_SHIP_COLOR = "red";
     private final String DEFAULT_OPPONENT_COLOR = "blue";
     private final int SOCKET_TIMEOUT = 5000;
-    private final int INSECTS_ROWS = 5;
+    private final int INSECTS_ROWS = 4;
     private final int INSECTS_COLS = 10;
     private final long SHOOT_DELAY = 800;
     private final long START_ANIMATION_DELAY = 7200;
@@ -63,6 +63,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private boolean isActivityPaused = false;
     private boolean isStartAnimationDone = false;
     private boolean moveLeft;
+    private boolean isOpponentInStartAnimation = true;
     private Thread insectShots;
     private Thread moveShots;
     private Thread moveInsects;
@@ -107,6 +108,12 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private void initWithRestWithStartDelay() {
         new Handler().postDelayed(new Runnable() {
             public void run() {
+                if(wifiP2pInfo.isGroupOwner){
+                   while (isOpponentInStartAnimation){
+                   }
+                }else{
+                    sendWifiMessage("animationDone");
+                }
                 isStartAnimationDone = true;
                 initAccelerometer();
                 initMoveInsectsThread();
@@ -670,6 +677,8 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                                 s.bringToFront();
                                 rl.addView(s);
                                 shootSound.start();
+                            }else if (s.equals("animationDone")){
+                                isOpponentInStartAnimation = false;
                             }else{
                                 opponentShip.move(s);
                             }
