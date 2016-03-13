@@ -203,7 +203,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private synchronized void startInsectsShotsThread(){
         insectShots = new Thread(new Runnable() {
             public void run() {
-                while (!isActivityPaused && !liveInsects.isEmpty()) {
+                while (wifiP2pInfo.isGroupOwner && !isActivityPaused && !liveInsects.isEmpty()) {
                     try {
                         Random rand = new Random();
                         int i = rand.nextInt(liveInsects.size());
@@ -212,6 +212,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                             @Override
                             public void run() {
                                 Shot s = insect.fire();
+                                sendWifiMessage(s);
                                 s.bringToFront();
                                 rl.addView(s);
                                 insectsShoots.add(s);
@@ -533,17 +534,22 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         if (curMovement >1) {
             if(curMovement>2){
                 playerShip.move("right3");
+                sendWifiMessage("right3");
             }else {
                 playerShip.move("right2");
+                sendWifiMessage("right2");
             }
         }else if(curMovement<-1){
             if(curMovement<-2){
                 playerShip.move("left3");
+                sendWifiMessage("left3");
             }else {
                 playerShip.move("left2");
+                sendWifiMessage("left2");
             }
         }else{
             playerShip.move("middle");
+            sendWifiMessage("middle");
         }
     }
 
@@ -612,7 +618,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         public void run() {
             try {
                 connection = new Socket(wifiP2pInfo.groupOwnerAddress, WiFiDirectReceiver.PORT);
-                //connection.connect((new InetSocketAddress(wifiP2pInfo.groupOwnerAddress, WiFiDirectReceiver.PORT)), SOCKET_TIMEOUT);
                 output = new ObjectOutputStream(connection.getOutputStream());
                 output.flush();
                 input = new ObjectInputStream(connection.getInputStream());
@@ -646,12 +651,22 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
             try{
                 message = input.readObject();
                 if (message instanceof Shot){
-                    Shot s = opponentShip.fire();
-                    shipsShoots.add(s);
-                    s.bringToFront();
-                    rl.addView(s);
-                }else if (message instanceof String && !message.equals("")){
-                    if (message.equals("enemy is dead")){
+                    final Shot s = (Shot) message;
+                    if(s.getEntity() instanceof SpaceShip){
+                        opponentShip.fire();
+                        shipsShoots.add(s);
+                    }else {
+                        insectsShoots.add(s);
+                    }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            s.bringToFront();
+                            rl.addView(s);
+                        }
+                    });
+                } else if (message instanceof String && !message.equals("")) {
+                    if (message.equals("enemy is dead")) {
                         winGame();
                     }else{
                         opponentShip.move((String) message);
