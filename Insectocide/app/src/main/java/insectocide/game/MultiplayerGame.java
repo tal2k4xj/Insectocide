@@ -62,7 +62,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private long lastShootTime = 0;
     private boolean isActivityPaused = false;
     private boolean isStartAnimationDone = false;
-    private boolean isStartClientAnimationDone = false;
+    private Boolean isStartClientAnimationDone = false;
     private boolean moveLeft;
     private Thread insectShots;
     private Thread moveShots;
@@ -110,8 +110,12 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
             public void run() {
                 isStartAnimationDone = true;
                 if(wifiP2pInfo.isGroupOwner){
-                    while(!isStartClientAnimationDone){
-                        for(int i=0; i<100 ;i++);
+                    synchronized(isStartClientAnimationDone){
+                        try {
+                            isStartClientAnimationDone.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }else{
                     sendWifiMessage("clientDone");
@@ -656,7 +660,10 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                         @Override
                         public void run() {
                             if (s.equals("clientDone")){
-                                isStartClientAnimationDone = true;
+                                synchronized(isStartClientAnimationDone){
+                                    isStartClientAnimationDone = true;
+                                    isStartClientAnimationDone.notify();
+                                }
                             } else if (s.equals("enemy is dead")) {
                                 winGame();
                             } else if (s.equals("shipFire")) {
