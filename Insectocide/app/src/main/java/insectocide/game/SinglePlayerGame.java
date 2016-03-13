@@ -42,9 +42,10 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     private final long SHOOT_DELAY = 800;
     private final long START_ANIMATION_DELAY = 7200;
     private MediaPlayer shipStart;
-    private MediaPlayer shootSound;
+    private MediaPlayer shipShootSound;
     private MediaPlayer shipExplode;
     private MediaPlayer bugDie;
+    private MediaPlayer insectStart;
     private int timeOfGame;
     private Sensor accelerometer;
     private SensorManager sm;
@@ -88,8 +89,9 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         rl = (RelativeLayout)findViewById(R.id.singlePlayerLayout);
 
-        shootSound = MediaPlayer.create(this, R.raw.shoot);
+        shipShootSound = MediaPlayer.create(this, R.raw.shoot);
         shipStart = MediaPlayer.create(this, R.raw.shipstart);
+        insectStart = MediaPlayer.create(this, R.raw.insects_start);
         shipExplode = MediaPlayer.create(this, R.raw.shipexplode);
         bugDie = MediaPlayer.create(this, R.raw.bugdie);
 
@@ -123,6 +125,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         spaceShip = new SpaceShip(DEFAULT_COLOR, this , metrics);
         spaceShip.bringToFront();
         rl.addView(spaceShip);
+        insectStart.start();
         shipStart.start();
     }
 
@@ -555,7 +558,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             s.bringToFront();
             rl.addView(s);
             lastShootTime = time;
-            shootSound.start();
+            shipShootSound.start();
         }
         return false;
     }
