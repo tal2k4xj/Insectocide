@@ -113,7 +113,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                 initAccelerometer();
                 initMoveInsectsThread();
                 initMoveShotsThread();
-                startInsectsShotsThread();
+                //startInsectsShotsThread();
             }
         }, START_ANIMATION_DELAY);
     }
@@ -160,7 +160,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private void initAccelerometer() {
         sm=(SensorManager)getSystemService(SENSOR_SERVICE);
         accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sm.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
+        sm.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     private void unRegisterAccelerometer(){
