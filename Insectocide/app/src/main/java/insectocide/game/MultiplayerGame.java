@@ -388,10 +388,12 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    if(wifiP2pInfo.isGroupOwner)
+                                    if(wifiP2pInfo.isGroupOwner) {
+                                        moveLeft = false;
                                         i.move("right");
-                                    else
+                                    }  else {
                                         i.move("left");
+                                    }
                                 }
                             });
                         }
