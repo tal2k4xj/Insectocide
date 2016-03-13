@@ -63,7 +63,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private boolean isActivityPaused = false;
     private boolean isStartAnimationDone = false;
     private boolean moveLeft;
-    private boolean isOpponentInStartAnimation = true;
     private Thread insectShots;
     private Thread moveShots;
     private Thread moveInsects;
@@ -108,12 +107,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private void initWithRestWithStartDelay() {
         new Handler().postDelayed(new Runnable() {
             public void run() {
-                if(wifiP2pInfo.isGroupOwner){
-                   while (isOpponentInStartAnimation){
-                   }
-                }else{
-                    sendWifiMessage("animationDone");
-                }
                 isStartAnimationDone = true;
                 initAccelerometer();
                 initMoveInsectsThread();
@@ -677,8 +670,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                                 s.bringToFront();
                                 rl.addView(s);
                                 shootSound.start();
-                            }else if (s.equals("animationDone")){
-                                isOpponentInStartAnimation = false;
                             }else{
                                 opponentShip.move(s);
                             }

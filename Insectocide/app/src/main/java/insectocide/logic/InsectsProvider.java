@@ -78,7 +78,7 @@ public class InsectsProvider {
         return insectTypes.remove(n);
     }
     private Insect createNewInsectFromConfiguration(String configuration){
-        int type = Integer.parseInt(configuration.substring(0,0));
+        int type = Integer.parseInt(configuration.substring(0,1));
         char directionChar = configuration.charAt(1);
         String direction = directionChar=='u' ? "up" : "down";
         return new Insect(InsectType.values()[type], direction , context, metrics);
