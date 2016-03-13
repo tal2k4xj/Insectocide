@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 public class Insect extends SpaceEntity {
 
     private final int MAX_INSECTS = 10;
+    private final int SINGLE_PLAYER_ROWS = 3;
     protected InsectType type;
     private String shootDirection;
 
@@ -42,12 +43,16 @@ public class Insect extends SpaceEntity {
         this.setBackgroundResource(drawableId);
     }
 
-    public void setPositionAndDimensions(int i , int j){
+    public void setPositionAndDimensions(int i , int j , int rows){
         width = metrics.heightPixels*0.09*1.3;
         height = metrics.heightPixels*0.09;
         setLayoutParams(new ViewGroup.LayoutParams((int) width, (int) height));
-        x = metrics.widthPixels + (metrics.widthPixels - (MAX_INSECTS*width + (MAX_INSECTS-1)*metrics.widthPixels*0.02))/2 + (i*width) + (i*metrics.widthPixels*0.02);
-        y = metrics.heightPixels*0.35 + j*height;
+        x = metrics.widthPixels + (metrics.widthPixels - (MAX_INSECTS * width + (MAX_INSECTS - 1) * metrics.widthPixels * 0.02)) / 2 + (i * width) + (i * metrics.widthPixels * 0.02);
+        if (rows == SINGLE_PLAYER_ROWS) {
+            y = metrics.heightPixels * 0.35 + j * height;
+        }else{
+            y = metrics.heightPixels * 0.275 + j * height;
+        }
         setY((float) y);
         setX((float)x);
         animate().x(getX() - this.metrics.widthPixels);

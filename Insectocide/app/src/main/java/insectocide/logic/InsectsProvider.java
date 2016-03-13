@@ -44,7 +44,7 @@ public class InsectsProvider {
                         insects[i][j] = new Insect(pickRandomTypeFromList(), "up", context, metrics);
                     }
                 }
-                insects[i][j].setPositionAndDimensions(i,j);
+                insects[i][j].setPositionAndDimensions(i,j,rows);
                 insects[i][j].bringToFront();
                 liveInsects.add(insects[i][j]);
             }
