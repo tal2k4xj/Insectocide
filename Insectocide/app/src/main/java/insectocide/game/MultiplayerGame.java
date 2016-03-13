@@ -62,6 +62,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private long lastShootTime = 0;
     private boolean isActivityPaused = false;
     private boolean isStartAnimationDone = false;
+    private boolean isStartClientAnimationDone = false;
     private boolean moveLeft;
     private Thread insectShots;
     private Thread moveShots;
@@ -108,6 +109,12 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         new Handler().postDelayed(new Runnable() {
             public void run() {
                 isStartAnimationDone = true;
+                if(wifiP2pInfo.isGroupOwner){
+                    while(!isStartClientAnimationDone){
+                    }
+                }else{
+                    sendWifiMessage("clientDone");
+                }
                 initAccelerometer();
                 initMoveInsectsThread();
                 initMoveShotsThread();
@@ -642,35 +649,22 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         do{
             try{
                 message = input.readObject();
-                if (message instanceof Shot){
-                    final Shot s = (Shot) message;
-                    if(s.getEntity() instanceof SpaceShip){
-                        opponentShip.fire();
-                        shipsShoots.add(s);
-                    }else {
-                        insectsShoots.add(s);
-                    }
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            s.bringToFront();
-                            rl.addView(s);
-                        }
-                    });
-                } else if (message instanceof String && !message.equals("")) {
+                if (message instanceof String && !message.equals("")) {
                     final String s = (String) message;
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (s.equals("enemy is dead")) {
+                            if (s.equals("clientDone")){
+                                isStartClientAnimationDone = true;
+                            } else if (s.equals("enemy is dead")) {
                                 winGame();
-                            }else if (s.equals("shipFire")){
+                            } else if (s.equals("shipFire")) {
                                 Shot s = opponentShip.fire();
                                 shipsShoots.add(s);
                                 s.bringToFront();
                                 rl.addView(s);
                                 shootSound.start();
-                            }else{
+                            } else {
                                 opponentShip.move(s);
                             }
                         }
