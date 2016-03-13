@@ -111,6 +111,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                 isStartAnimationDone = true;
                 if(wifiP2pInfo.isGroupOwner){
                     while(!isStartClientAnimationDone){
+                        for(int i=0; i<100 ;i++);
                     }
                 }else{
                     sendWifiMessage("clientDone");
