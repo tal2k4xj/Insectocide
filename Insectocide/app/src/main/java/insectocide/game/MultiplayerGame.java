@@ -669,7 +669,13 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                     if (message.equals("enemy is dead")) {
                         winGame();
                     }else{
-                        opponentShip.move((String) message);
+                        final String m = (String)message;
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                opponentShip.move(m);
+                            }
+                        });
                     }
                 }
             }
