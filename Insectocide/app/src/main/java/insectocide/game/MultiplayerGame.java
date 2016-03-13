@@ -560,7 +560,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         long time = event.getDownTime();
         if(!isActivityPaused && isStartAnimationDone && time-lastShootTime > SHOOT_DELAY ) {
             Shot s = playerShip.fire();
-            sendWifiMessage(s);
+            sendWifiMessage("shipFire");
             shipsShoots.add(s);
             s.bringToFront();
             rl.addView(s);
@@ -644,7 +644,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         }
     }
 
-    public synchronized void checkInputWhilePlay() throws IOException{
+    public void checkInputWhilePlay() throws IOException{
         Object message = "";
         do{
             try{
@@ -671,6 +671,12 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                         public void run() {
                             if (s.equals("enemy is dead")) {
                                 winGame();
+                            }else if (s.equals("shipFire")){
+                                Shot s = opponentShip.fire();
+                                shipsShoots.add(s);
+                                s.bringToFront();
+                                rl.addView(s);
+                                shootSound.start();
                             }else{
                                 opponentShip.move(s);
                             }
@@ -684,7 +690,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         }while(!message.toString().equals("END"));
     }
 
-    public void sendWifiMessage(Object message){
+    public synchronized void sendWifiMessage(Object message){
         try{
             output.writeObject(message);
             output.flush();
