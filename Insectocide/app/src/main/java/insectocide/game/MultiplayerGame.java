@@ -666,11 +666,17 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                         }
                     });
                 } else if (message instanceof String && !message.equals("")) {
-                    if (message.equals("enemy is dead")) {
-                        winGame();
-                    }else{
-                        opponentShip.move((String) message);
-                    }
+                    final String s = (String) message;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (s.equals("enemy is dead")) {
+                                winGame();
+                            }else{
+                                opponentShip.move(s);
+                            }
+                        }
+                    });
                 }
             }
             catch (ClassNotFoundException classNotFoundException){
