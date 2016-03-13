@@ -125,17 +125,21 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
 
     private void initMultiplayer(){
         connection = new Socket();
-        if (wifiP2pInfo.isGroupOwner) {
+        if (wifiP2pInfo != null && wifiP2pInfo.isGroupOwner) {
             serverThread = new ServerSocketThread();
-            serverThread.run();
+            serverThread.start();
         } else {
-            clientThread = new ClientSocketThread();
-            clientThread.run();
+            new Handler().postDelayed(new Runnable() {
+                public void run() {
+                    clientThread = new ClientSocketThread();
+                    clientThread.start();
+                }
+            }, 100);
         }
     }
 
-    private void initShips(){
-        playerShip = new SpaceShip(DEFAULT_PLAYER_SHIP_COLOR, this , metrics);
+    private void initShips() {
+        playerShip = new SpaceShip(DEFAULT_PLAYER_SHIP_COLOR, this, metrics);
         playerShip.bringToFront();
         rl.addView(playerShip);
         opponentShip = new SpaceShip(DEFAULT_OPPONENT_COLOR, this , metrics);
@@ -573,7 +577,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         @Override
         public void run() {
             try {
-                server = new ServerSocket(WiFiDirectReceiver.PORT, 1);
+                server = new ServerSocket(WiFiDirectReceiver.PORT,1);
                 while (true) {
                     try {
                         connection = server.accept();
@@ -607,8 +611,8 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         @Override
         public void run() {
             try {
-                //connection = new Socket(wifiP2pInfo.groupOwnerAddress, WiFiDirectReceiver.PORT);
-                connection.connect((new InetSocketAddress(wifiP2pInfo.groupOwnerAddress, WiFiDirectReceiver.PORT)), SOCKET_TIMEOUT);
+                connection = new Socket(wifiP2pInfo.groupOwnerAddress, WiFiDirectReceiver.PORT);
+                //connection.connect((new InetSocketAddress(wifiP2pInfo.groupOwnerAddress, WiFiDirectReceiver.PORT)), SOCKET_TIMEOUT);
                 output = new ObjectOutputStream(connection.getOutputStream());
                 output.flush();
                 input = new ObjectInputStream(connection.getInputStream());
