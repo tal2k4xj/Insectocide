@@ -14,10 +14,10 @@ public class Insect extends SpaceEntity {
     protected InsectType type;
     private String shootDirection;
 
-    public Insect(InsectType type, Context context, DisplayMetrics metrics) {
+    public Insect(InsectType type,String shootDirection, Context context, DisplayMetrics metrics) {
         super(context,metrics);
         this.type = type;
-        shootDirection = "down"; // need to be changed for multiplayer
+        this.shootDirection = shootDirection;
         setImageByType();
         initPowersByType();
         setVisibility(View.VISIBLE);

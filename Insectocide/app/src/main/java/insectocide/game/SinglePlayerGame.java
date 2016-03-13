@@ -13,6 +13,7 @@ import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Vibrator;
 import android.text.InputType;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
@@ -69,7 +70,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     private TextView scoreText;
     private ImageButton pauseButton;
     private String playerName;
-
+    private Vibrator vibrate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,8 +89,8 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         rl = (RelativeLayout)findViewById(R.id.singlePlayerLayout);
-
         shipShootSound = MediaPlayer.create(this, R.raw.shoot);
+        vibrate = (Vibrator) getSystemService(VIBRATOR_SERVICE);
         shipStart = MediaPlayer.create(this, R.raw.shipstart);
         insectStart = MediaPlayer.create(this, R.raw.insects_start);
         shipExplode = MediaPlayer.create(this, R.raw.shipexplode);
@@ -130,14 +131,13 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     }
 
     private void initInsects(){
-        InsectsProvider insectsProvider = new InsectsProvider(INSECTS_ROWS, INSECTS_COLS, this, metrics);
+        InsectsProvider insectsProvider = new InsectsProvider(INSECTS_ROWS, INSECTS_COLS,"single", this, metrics);
         liveInsects = insectsProvider.getLiveInsectsList();
         insects = insectsProvider.getInsectMatrix();
         for (Insect insect: liveInsects) {
             rl.addView(insect);
         }
     }
-
 
     private void initAccelerometer() {
         sm=(SensorManager)getSystemService(SENSOR_SERVICE);
@@ -279,11 +279,11 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
                         public void run() {
                             insect.die();
                             showInsectBonus(insect);
+                            bugDie.start();
                         }
                     });
                     spaceShip.getPowerFromInsect(insect.getType());
                     liveInsects.remove(insect);
-                    bugDie.start();
                 }
                 if (liveInsects.size()==0){
                     winGame();
@@ -379,8 +379,8 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         if (r1.intersect(r2)){
             spaceShip.gotHit(s.getPower());
             spaceShip.reducePowers();
+            vibrate.vibrate(150);
             if(spaceShip.isDead()){
-                shipExplode.start();
                 loseGame();
             }
             removeShot(s);
@@ -433,14 +433,15 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             }
 
             private int calcInsectSpeed() {
+                int numbOfStartInsects = INSECTS_COLS*INSECTS_ROWS;
                 int numOfInsects = liveInsects.size();
-                if (numOfInsects>=25){
+                if (numOfInsects>=numbOfStartInsects*0.8){
                     return 200;
-                }else if(numOfInsects>=20){
+                }else if(numOfInsects>=numbOfStartInsects*0.6){
                     return 180;
-                }else if(numOfInsects>=15){
+                }else if(numOfInsects>=numbOfStartInsects*0.4){
                     return 150;
-                }else if(numOfInsects>=10){
+                }else if(numOfInsects>=numbOfStartInsects*0.2){
                     return 120;
                 }else {
                     return 100;
@@ -456,6 +457,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             @Override
             public void run() {
                 spaceShip.die();
+                shipExplode.start();
                 endGame();
             }
         });
@@ -478,7 +480,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     }
 
     private void drawShipLive(){
-        for (int i=shipLives.size(); i<spaceShip.getHealth() ; i++){
+        for (int i=shipLives.size(); i< spaceShip.getHealth() ; i++){
             final ImageView live = new ImageView(this);
             live.setBackgroundResource(R.drawable.live);
             double length = metrics.heightPixels*0.1;
@@ -499,7 +501,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     }
 
     private void removeShipLive(){
-        for (int i=(int)spaceShip.getHealth(); i<shipLives.size() ; i++){
+        for (int i=(int) spaceShip.getHealth(); i<shipLives.size() ; i++){
             final ImageView live = shipLives.get(i);
             runOnUiThread(new Runnable() {
                 @Override

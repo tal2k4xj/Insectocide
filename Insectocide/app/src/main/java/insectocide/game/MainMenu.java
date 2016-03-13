@@ -6,6 +6,7 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.VideoView;
@@ -34,11 +35,21 @@ public class MainMenu extends Activity implements View.OnClickListener {
         String UrlPath="android.resource://"+getPackageName()+"/"+R.raw.insectocideintro;
         startAppVideo.setVideoURI(Uri.parse(UrlPath));
         startAppVideo.start();
+        startAppVideo.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                rl.removeView(startAppVideo);
+                activateListeners();
+                return false;
+            }
+        });
 
         new Handler().postDelayed(new Runnable() {
             public void run() {
-                rl.removeView(startAppVideo);
-                activateListeners();
+                if (startAppVideo != null) {
+                    rl.removeView(startAppVideo);
+                    activateListeners();
+                }
             }
         }, 15000);
     }
