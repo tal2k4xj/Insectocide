@@ -62,7 +62,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private long lastShootTime = 0;
     private boolean isActivityPaused = false;
     private boolean isStartAnimationDone = false;
-    private boolean moveLeft = true;
+    private boolean moveLeft;
     private Thread insectShots;
     private Thread moveShots;
     private Thread moveInsects;
@@ -96,7 +96,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         Bundle extras = getIntent().getExtras();
         wifiP2pInfo = (WifiP2pInfo)extras.get("WIFI_P2P_INFO");
         initMultiplayer();
-
+        moveLeft = wifiP2pInfo.isGroupOwner ? false : true;
         initShips();
         updateLives();
         initInsects();
@@ -388,12 +388,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    if(wifiP2pInfo.isGroupOwner) {
-                                        moveLeft = false;
-                                        i.move("right");
-                                    }  else {
-                                        i.move("left");
-                                    }
+                                    i.move("left");
                                 }
                             });
                         }
@@ -408,11 +403,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    if(!wifiP2pInfo.isGroupOwner)
-                                        i.move("right");
-                                    else
-                                        i.move("left");
-
+                                    i.move("right");
                                 }
                             });
                         }
