@@ -67,6 +67,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private Thread insectShots;
     private Thread moveShots;
     private Thread moveInsects;
+    private Thread delayServerStart;
     private Vibrator vibrate;
     private ServerSocket server;
     private Socket connection;
@@ -102,6 +103,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         updateLives();
         initInsects();
         startReadyGoAnimation();
+        initThreadForClientFinishAnimation();
         initWithRestWithStartDelay();
     }
 
@@ -110,17 +112,27 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
             public void run() {
                 isStartAnimationDone = true;
                 if(wifiP2pInfo.isGroupOwner){
-                    while (isStartClientAnimationDone) {
+                    while (!isStartClientAnimationDone) {
                     }
+                    delayServerStart.start();
                 }else{
                     sendWifiMessage("clientDone");
+                    delayServerStart.start();
                 }
+            }
+        }, START_ANIMATION_DELAY);
+    }
+
+    private void initThreadForClientFinishAnimation(){
+        delayServerStart = new Thread(new Runnable() {
+            @Override
+            public void run() {
                 initAccelerometer();
                 initMoveInsectsThread();
                 initMoveShotsThread();
                 //startInsectsShotsThread();
             }
-        }, START_ANIMATION_DELAY);
+        });
     }
 
     @Override
