@@ -50,6 +50,7 @@
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen" >
         </activity>
         <activity
+            android:noHistory="true"
             android:name=".SinglePlayerGame"
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen" >
@@ -61,12 +62,14 @@
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen" >
         </activity>
         <activity
+            android:noHistory="true"
             android:name=".MultiplayerMenu"
             android:hardwareAccelerated="false"
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen" >
         </activity>
         <activity
+            android:noHistory="true"
             android:name=".MultiplayerGame"
             android:hardwareAccelerated="true"
             android:screenOrientation="landscape"
