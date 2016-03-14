@@ -62,7 +62,6 @@
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen" >
         </activity>
         <activity
-            android:noHistory="true"
             android:name=".MultiplayerMenu"
             android:hardwareAccelerated="false"
             android:screenOrientation="landscape"
