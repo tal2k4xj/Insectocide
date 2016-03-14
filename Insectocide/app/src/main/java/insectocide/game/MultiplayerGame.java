@@ -33,7 +33,7 @@ import insectocide.logic.Insect;
 import insectocide.logic.InsectsProvider;
 import insectocide.logic.Shot;
 import insectocide.logic.SpaceShip;
-import insectocide.logic.WiFiDirectReceiver;
+import insectocide.logic.WiFiDirectReceiver;dd
 
 public class MultiplayerGame extends Activity implements SensorEventListener{
     private final String DEFAULT_PLAYER_SHIP_COLOR = "red";
@@ -225,11 +225,12 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                         Random rand = new Random();
                         int i = rand.nextInt(liveInsects.size());
                         final Insect insect = liveInsects.get(i);
+                        final String shotMessage="insect "+ (i+100) + " shoot";
+                        sendWifiMessage(shotMessage);
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 Shot s = insect.fire();
-                                sendWifiMessage(s);
                                 s.bringToFront();
                                 rl.addView(s);
                                 insectsShoots.add(s);
@@ -676,7 +677,19 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                                 s.bringToFront();
                                 rl.addView(s);
                                 shootSound.start();
-                            } else {
+                            } else if (s.startsWith("insect")) {
+                                int insectNum = Integer.parseInt(s.substring(7,10))-100;
+                                final Insect insect = liveInsects.get(insectNum);
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Shot s = insect.fire();
+                                        s.bringToFront();
+                                        rl.addView(s);
+                                        insectsShoots.add(s);
+                                    }
+                                });
+                            } else{
                                 opponentShip.move(s);
                             }
                         }
