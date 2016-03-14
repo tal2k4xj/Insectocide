@@ -117,6 +117,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                             }
                         }else{
                             sendWifiMessage("clientDone");
+                            isStartClientAnimationDone = true;
                         }
                         initAccelerometer();
                         initMoveInsectsThread();
@@ -563,7 +564,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
 
     public boolean onTouchEvent(MotionEvent event) {
         long time = event.getDownTime();
-        if(isConnectedToOpponent && isStartAnimationDone && time-lastShootTime > SHOOT_DELAY ) {
+        if(isConnectedToOpponent && isStartAnimationDone && isStartClientAnimationDone && time-lastShootTime > SHOOT_DELAY ) {
             Shot s = playerShip.fire();
             sendWifiMessage("shipFire");
             shipsShoots.add(s);
