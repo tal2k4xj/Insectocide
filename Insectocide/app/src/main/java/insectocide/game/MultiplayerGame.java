@@ -658,7 +658,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         do{
                 message = input.readUTF();
             final String inputStr = message;
-            if (message.equals("")) {
+            if (!message.equals("")) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -701,8 +701,10 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
 
     public synchronized void sendWifiMessage(String message){
         try{
-            output.writeChars(message);
-            output.flush();
+            if(isConnectedToOpponent) {
+                output.writeUTF(message);
+                output.flush();
+            }
         }
         catch (IOException ioException){
             ioException.printStackTrace();
