@@ -10,6 +10,7 @@ import android.media.MediaPlayer;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Vibrator;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
@@ -358,6 +359,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         unRegisterAccelerometer();
         isConnectedToOpponent = false;
         sendWifiMessage("END");
+        Looper.prepare();
         new Handler().postDelayed(new Runnable() {
             public void run() {
                 finish();
