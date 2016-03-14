@@ -60,7 +60,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private List<ImageView> shipLives;
     private RelativeLayout rl;
     private long lastShootTime = 0;
-    private boolean isActivityPaused = false;
+    private boolean isConnectedToOpponent = false;
     private boolean isStartAnimationDone = false;
     private volatile boolean isStartClientAnimationDone = false;
     private boolean moveLeft;
@@ -126,11 +126,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                 }).start();
             }
         }, START_ANIMATION_DELAY);
-    }
-
-    @Override
-    protected void onStart(){
-        super.onStart();
     }
 
     private void initMultiplayer(){
@@ -213,7 +208,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private synchronized void startInsectsShotsThread(){
         insectShots = new Thread(new Runnable() {
             public void run() {
-                while (wifiP2pInfo.isGroupOwner && !isActivityPaused && !liveInsects.isEmpty()) {
+                while (wifiP2pInfo.isGroupOwner && isConnectedToOpponent && !liveInsects.isEmpty()) {
                     try {
                         Random rand = new Random();
                         int i = rand.nextInt(liveInsects.size());
@@ -258,7 +253,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private synchronized void initMoveShotsThread() {
         moveShots = new Thread(new Runnable() {
             public void run() {
-                while (!isActivityPaused) {
+                while (isConnectedToOpponent) {
                     try{
                         for (final Shot s : insectsShoots) {
                             if(!s.isOutOfScreen()) {
@@ -360,8 +355,21 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         });
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        endGame();
+    }
+
     private void endGame() {
         unRegisterAccelerometer();
+        sendWifiMessage("END");
+        isConnectedToOpponent = false;
+        new Handler().postDelayed(new Runnable() {
+            public void run() {
+                finish();
+            }
+        }, 2000);
     }
 
     private void checkIfShipHit(Shot s){
@@ -394,7 +402,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         moveInsects = new Thread(new Runnable() {
             @Override
             public void run() {
-                while(!isActivityPaused && !liveInsects.isEmpty()) {
+                while(isConnectedToOpponent && !liveInsects.isEmpty()) {
                     Insect first,last;
                     if (moveLeft) {
                         for (final Insect i : liveInsects) {
@@ -564,7 +572,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
 
     public boolean onTouchEvent(MotionEvent event) {
         long time = event.getDownTime();
-        if(!isActivityPaused && isStartAnimationDone && time-lastShootTime > SHOOT_DELAY ) {
+        if(isConnectedToOpponent && isStartAnimationDone && time-lastShootTime > SHOOT_DELAY ) {
             Shot s = playerShip.fire();
             sendWifiMessage("shipFire");
             shipsShoots.add(s);
@@ -578,6 +586,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
+            endGame();
             finish();
             return true;
         }
@@ -592,6 +601,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                 while (true) {
                     try {
                         connection = server.accept();
+                        isConnectedToOpponent = true;
                         output = new ObjectOutputStream(connection.getOutputStream());
                         output.flush();
                         input = new ObjectInputStream(connection.getInputStream());
@@ -623,6 +633,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         public void run() {
             try {
                 connection = new Socket(wifiP2pInfo.groupOwnerAddress, WiFiDirectReceiver.PORT);
+                isConnectedToOpponent = true;
                 output = new ObjectOutputStream(connection.getOutputStream());
                 output.flush();
                 input = new ObjectInputStream(connection.getInputStream());
@@ -682,7 +693,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                                         insectsShoots.add(s);
                                     }
                                 });
-                            } else{
+                            } else if (!s.equals("END")){
                                 opponentShip.move(s);
                             }
                         }
