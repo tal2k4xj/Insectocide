@@ -33,7 +33,7 @@ import insectocide.logic.Insect;
 import insectocide.logic.InsectsProvider;
 import insectocide.logic.Shot;
 import insectocide.logic.SpaceShip;
-import insectocide.logic.WiFiDirectReceiver;dd
+import insectocide.logic.WiFiDirectReceiver;
 
 public class MultiplayerGame extends Activity implements SensorEventListener{
     private final String DEFAULT_PLAYER_SHIP_COLOR = "red";
@@ -67,7 +67,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private Thread insectShots;
     private Thread moveShots;
     private Thread moveInsects;
-    private Thread delayServerStart;
     private Vibrator vibrate;
     private ServerSocket server;
     private Socket connection;
@@ -103,7 +102,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         updateLives();
         initInsects();
         startReadyGoAnimation();
-        initThreadForClientFinishAnimation();
         initWithRestWithStartDelay();
     }
 
@@ -111,28 +109,23 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         new Handler().postDelayed(new Runnable() {
             public void run() {
                 isStartAnimationDone = true;
-                if(wifiP2pInfo.isGroupOwner){
-                    while (!isStartClientAnimationDone) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(wifiP2pInfo.isGroupOwner){
+                            while (!isStartClientAnimationDone) {
+                            }
+                        }else{
+                            sendWifiMessage("clientDone");
+                        }
+                        initAccelerometer();
+                        initMoveInsectsThread();
+                        initMoveShotsThread();
+                        //startInsectsShotsThread();
                     }
-                    delayServerStart.start();
-                }else{
-                    sendWifiMessage("clientDone");
-                    delayServerStart.start();
-                }
+                }).start();
             }
         }, START_ANIMATION_DELAY);
-    }
-
-    private void initThreadForClientFinishAnimation(){
-        delayServerStart = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                initAccelerometer();
-                initMoveInsectsThread();
-                initMoveShotsThread();
-                //startInsectsShotsThread();
-            }
-        });
     }
 
     @Override
