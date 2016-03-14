@@ -538,18 +538,18 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         if (curMovement >1) {
             if(curMovement>2){
                 playerShip.move("right3");
-                sendWifiMessage("right3");
+                sendWifiMessage("left3");
             }else {
                 playerShip.move("right2");
-                sendWifiMessage("right2");
+                sendWifiMessage("left2");
             }
         }else if(curMovement<-1){
             if(curMovement<-2){
                 playerShip.move("left3");
-                sendWifiMessage("left3");
+                sendWifiMessage("right3");
             }else {
                 playerShip.move("left2");
-                sendWifiMessage("left2");
+                sendWifiMessage("right2");
             }
         }else{
             playerShip.move("middle");
