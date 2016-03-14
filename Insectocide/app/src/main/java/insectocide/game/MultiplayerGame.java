@@ -217,18 +217,9 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                     try {
                         Random rand = new Random();
                         int i = rand.nextInt(liveInsects.size());
-                        final Insect insect = liveInsects.get(i);
                         final String shotMessage="insect "+ (i+100) + " shoot";
                         sendWifiMessage(shotMessage);
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Shot s = insect.fire();
-                                s.bringToFront();
-                                rl.addView(s);
-                                insectsShoots.add(s);
-                            }
-                        });
+                        insectShoot(i);
                         int timeToSleep = calculateInsectShootingTime();
                         Thread.sleep(timeToSleep);
                     } catch (InterruptedException e) {
@@ -239,13 +230,13 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
 
             private int calculateInsectShootingTime() {
                 int numOfInsects = liveInsects.size();
-                if (numOfInsects>=25){
+                if (numOfInsects>=numOfInsects*0.8){
                     return 450;
-                }else if(numOfInsects>=20){
+                }else if(numOfInsects>=numOfInsects*0.6){
                     return 800;
-                }else if(numOfInsects>=15){
+                }else if(numOfInsects>=numOfInsects*0.4){
                     return 1300;
-                }else if(numOfInsects>=10){
+                }else if(numOfInsects>=numOfInsects*0.2){
                     return 1800;
                 }else {
                     return 2500;
@@ -672,16 +663,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                                 shootSound.start();
                             } else if (s.startsWith("insect")) {
                                 int insectNum = Integer.parseInt(s.substring(7,10))-100;
-                                final Insect insect = liveInsects.get(insectNum);
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Shot s = insect.fire();
-                                        s.bringToFront();
-                                        rl.addView(s);
-                                        insectsShoots.add(s);
-                                    }
-                                });
+                                insectShoot(insectNum);
                             } else{
                                 opponentShip.move(s);
                             }
@@ -693,6 +675,19 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                 classNotFoundException.printStackTrace();
             }
         }while(!message.toString().equals("END"));
+    }
+
+    private void insectShoot(int insectNum) {
+        final Insect insect = liveInsects.get(insectNum);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Shot s = insect.fire();
+                s.bringToFront();
+                rl.addView(s);
+                insectsShoots.add(s);
+            }
+        });
     }
 
     public synchronized void sendWifiMessage(Object message){
