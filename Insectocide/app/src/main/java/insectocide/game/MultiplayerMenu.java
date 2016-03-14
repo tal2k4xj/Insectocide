@@ -43,6 +43,11 @@ public class MultiplayerMenu extends Activity implements View.OnClickListener,Wi
         setContentView(R.layout.activity_multiplayer_menu);
 
         buttonHandler = new Handler();
+        
+        if(isWfdReceiverRegisteredAndFeatureEnabled()) {
+            unRegisterWfdReceiver();
+            wfManager = null;
+        }
 
         wfManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         wfChannel = wfManager.initialize(this, getMainLooper(), this);
@@ -72,6 +77,7 @@ public class MultiplayerMenu extends Activity implements View.OnClickListener,Wi
                 enableWifi.setBackgroundResource(R.drawable.enablewifibuttonpressed);
                 startProgressBar();
                 registerWfdReceiver();
+                onDiscover();
                 break;
             case R.id.FindOpponentButton:
                 findOpponentButton.setBackgroundResource(R.drawable.findopponentbuttonpressed);
