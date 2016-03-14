@@ -689,17 +689,19 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         }while(!message.toString().equals("END") && isConnectedToOpponent);
     }
 
-    private void insectShoot(int insectNum) {
-        final Insect insect = liveInsects.get(insectNum);
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Shot s = insect.fire();
-                s.bringToFront();
-                rl.addView(s);
-                insectsShoots.add(s);
-            }
-        });
+    private synchronized void insectShoot(int insectNum) {
+        if (liveInsects.size() > insectNum) {
+            final Insect insect = liveInsects.get(insectNum);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Shot s = insect.fire();
+                    s.bringToFront();
+                    rl.addView(s);
+                    insectsShoots.add(s);
+                }
+            });
+        }
     }
 
     public synchronized void sendWifiMessage(Object message){
