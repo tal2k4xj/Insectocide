@@ -65,19 +65,19 @@ public class SpaceShip extends SpaceEntity {
         switch (direction) {
             case "left2":
                 if (getX() > 0)
-                    setX(getX()- (float)(movementSpeed*(metrics.widthPixels*0.02)));
+                    setX(getX()- (float)(movementSpeed*(metrics.widthPixels*0.001)));
                 break;
             case "left3":
                 if (getX() > 0)
-                    setX(getX()- (float)(movementSpeed*(metrics.widthPixels*0.03)));
+                    setX(getX()- (float)(movementSpeed*(metrics.widthPixels*0.0015)));
                 break;
             case "right2":
                 if (getX() < metrics.widthPixels-width)
-                    setX(getX()+ (float)(movementSpeed*(metrics.widthPixels*0.02)));
+                    setX(getX()+ (float)(movementSpeed*(metrics.widthPixels*0.001)));
                 break;
             case "right3":
                 if (getX() < metrics.widthPixels-width)
-                    setX(getX()+ (float)(movementSpeed*(metrics.widthPixels*0.03)));
+                    setX(getX()+ (float)(movementSpeed*(metrics.widthPixels*0.0015)));
                 break;
             }
         lastMovement=direction;

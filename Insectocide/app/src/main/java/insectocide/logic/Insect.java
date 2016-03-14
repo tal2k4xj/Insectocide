@@ -30,10 +30,10 @@ public class Insect extends SpaceEntity {
     public void move(String direction) {
         switch (direction) {
             case "left":
-                setX(getX()- (float)(movementSpeed*(metrics.widthPixels*0.01)));
+                setX(getX()- (float)(movementSpeed*(metrics.widthPixels*0.0007)));
                 break;
             case "right":
-                setX(getX()+ (float)(movementSpeed*(metrics.widthPixels*0.01)));
+                setX(getX()+ (float)(movementSpeed*(metrics.widthPixels*0.0007)));
                 break;
         }
     }
