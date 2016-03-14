@@ -605,7 +605,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                         input = new ObjectInputStream(connection.getInputStream());
                         checkInputWhilePlay();
                     } catch (EOFException eofException) {
-                        Toast.makeText(MultiplayerGame.this, "Connection closed", Toast.LENGTH_SHORT).show();
                         finish();
                     }
                     finally {
@@ -637,7 +636,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                 input = new ObjectInputStream(connection.getInputStream());
                 checkInputWhilePlay();
             } catch (EOFException eofException) {
-                Toast.makeText(MultiplayerGame.this, "Connection closed", Toast.LENGTH_SHORT).show();
                 finish();
             } catch (IOException ioException) {
                 ioException.printStackTrace();
@@ -714,7 +712,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         }
         catch (IOException ioException){
             ioException.printStackTrace();
-            Toast.makeText(MultiplayerGame.this, "Connection Lost, Exit game", Toast.LENGTH_SHORT).show();
             finish();
         }
     }

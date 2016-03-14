@@ -43,14 +43,6 @@ public class MultiplayerMenu extends Activity implements View.OnClickListener,Wi
         setContentView(R.layout.activity_multiplayer_menu);
 
         buttonHandler = new Handler();
-        
-        if(isWfdReceiverRegisteredAndFeatureEnabled()) {
-            unRegisterWfdReceiver();
-            wfManager = null;
-        }
-
-        wfManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
-        wfChannel = wfManager.initialize(this, getMainLooper(), this);
 
         enableWifi = (ImageButton)findViewById(R.id.EnableWifiButton);
         enableWifi.setOnClickListener(this);
@@ -71,13 +63,28 @@ public class MultiplayerMenu extends Activity implements View.OnClickListener,Wi
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        if(isWfdReceiverRegisteredAndFeatureEnabled()) {
+            unRegisterWfdReceiver();
+            wfManager = null;
+        }
+        wfManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+        wfChannel = wfManager.initialize(this, getMainLooper(), this);
+    }
+
+    @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.EnableWifiButton:
                 enableWifi.setBackgroundResource(R.drawable.enablewifibuttonpressed);
                 startProgressBar();
                 registerWfdReceiver();
-                onDiscover();
+                new Handler().postDelayed(new Runnable() {
+                    public void run() {
+                        onDiscover();
+                    }
+                }, 500);
                 break;
             case R.id.FindOpponentButton:
                 findOpponentButton.setBackgroundResource(R.drawable.findopponentbuttonpressed);
