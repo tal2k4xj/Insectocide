@@ -654,40 +654,34 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     }
 
     public void checkInputWhilePlay() throws IOException{
-        Object message = "";
+        String message = "";
         do{
-            try{
-                message = input.readObject();
-                if (message instanceof String && !message.equals("")) {
-                    final String s = (String) message;
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (s.equals("clientDone")){
-                                isStartClientAnimationDone = true;
-                            } else if (s.equals("enemy is dead")) {
-                                winGame();
-                            } else if (s.equals("shipFire")) {
-                                Shot s = opponentShip.fire();
-                                shipsShoots.add(s);
-                                s.bringToFront();
-                                rl.addView(s);
-                                shootSound.start();
-                            } else if (s.startsWith("insect")) {
-                                int insectNum = Integer.parseInt(s.substring(7,10))-100;
-                                insectShoot(insectNum);
-                            } else if (!s.equals("END")){
-
-                                opponentShip.move(s);
-                            }
+                message = input.readUTF();
+            final String inputStr = message;
+            if (message.equals("")) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (inputStr.equals("clientDone")){
+                            isStartClientAnimationDone = true;
+                        } else if (inputStr.equals("enemy is dead")) {
+                            winGame();
+                        } else if (inputStr.equals("shipFire")) {
+                            Shot s = opponentShip.fire();
+                            shipsShoots.add(s);
+                            s.bringToFront();
+                            rl.addView(s);
+                            shootSound.start();
+                        } else if (inputStr.startsWith("insect")) {
+                            int insectNum = Integer.parseInt(inputStr.substring(7,10))-100;
+                            insectShoot(insectNum);
+                        } else if (!inputStr.equals("END")){
+                            opponentShip.move(inputStr);
                         }
-                    });
-                }
+                    }
+                });
             }
-            catch (ClassNotFoundException classNotFoundException){
-                classNotFoundException.printStackTrace();
-            }
-        }while(!message.toString().equals("END") && isConnectedToOpponent);
+        }while(!message.equals("END") && isConnectedToOpponent);
     }
 
     private synchronized void insectShoot(int insectNum) {
@@ -705,9 +699,9 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         }
     }
 
-    public synchronized void sendWifiMessage(Object message){
+    public synchronized void sendWifiMessage(String message){
         try{
-            output.writeObject(message);
+            output.writeChars(message);
             output.flush();
         }
         catch (IOException ioException){
