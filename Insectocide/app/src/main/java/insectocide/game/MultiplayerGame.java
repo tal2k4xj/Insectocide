@@ -74,6 +74,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private ObjectInputStream input;
     private ServerSocketThread serverThread;
     private ClientSocketThread clientThread;
+    private String lastMovement = "";
 
 
     @Override
@@ -536,6 +537,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private void moveShip(float curMovement) {
 
         if (curMovement >1) {
+            lastMovement = "right";
             if(curMovement>2){
                 playerShip.move("right3");
                 sendWifiMessage("left3");
@@ -544,6 +546,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                 sendWifiMessage("left2");
             }
         }else if(curMovement<-1){
+            lastMovement = "left";
             if(curMovement<-2){
                 playerShip.move("left3");
                 sendWifiMessage("right3");
@@ -552,8 +555,11 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                 sendWifiMessage("right2");
             }
         }else{
-            playerShip.move("middle");
-            sendWifiMessage("middle");
+            if(!lastMovement.equals("middle")) {
+                playerShip.move("middle");
+                sendWifiMessage("middle");
+            }
+            lastMovement = "middle";
         }
     }
 
@@ -656,7 +662,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     public void checkInputWhilePlay() throws IOException{
         String message = "";
         do{
-                message = input.readUTF();
+            message = input.readUTF();
             final String inputStr = message;
             if (!message.equals("")) {
                 runOnUiThread(new Runnable() {
