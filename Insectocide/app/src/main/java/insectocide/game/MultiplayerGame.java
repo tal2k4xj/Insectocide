@@ -356,8 +356,8 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
 
     private void endGame() {
         unRegisterAccelerometer();
-        sendWifiMessage("END");
         isConnectedToOpponent = false;
+        sendWifiMessage("END");
         new Handler().postDelayed(new Runnable() {
             public void run() {
                 finish();
@@ -585,7 +585,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
             endGame();
-            finish();
             return true;
         }
         return super.onKeyDown(keyCode, event);
@@ -605,7 +604,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                         input = new ObjectInputStream(connection.getInputStream());
                         checkInputWhilePlay();
                     } catch (EOFException eofException) {
-                        finish();
+                        endGame();
                     }
                     finally {
                         output.close();
@@ -620,7 +619,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                 }
             } catch (IOException ioException){
                 ioException.printStackTrace();
-                finish();
+                endGame();
             }
         }
     }
@@ -636,10 +635,10 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                 input = new ObjectInputStream(connection.getInputStream());
                 checkInputWhilePlay();
             } catch (EOFException eofException) {
-                finish();
+                endGame();
             } catch (IOException ioException) {
                 ioException.printStackTrace();
-                finish();
+                endGame();
             } finally {
                 try {
                     output.close();
@@ -712,7 +711,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         }
         catch (IOException ioException){
             ioException.printStackTrace();
-            finish();
+            endGame();
         }
     }
 }
