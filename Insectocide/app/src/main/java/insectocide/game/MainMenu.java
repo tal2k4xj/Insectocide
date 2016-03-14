@@ -25,7 +25,6 @@ public class MainMenu extends Activity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
-        initEnglishDefaultLanguage();
         rl = (RelativeLayout)findViewById(R.id.mainMenuLayout);
         singlePlayerButton = findViewById(R.id.SinglePlayerButton);
         MultiPlayerButton = findViewById(R.id.MultiPlayerButton);
@@ -53,15 +52,6 @@ public class MainMenu extends Activity implements View.OnClickListener {
             }
         }, 15000);
     }
-
-    private void initEnglishDefaultLanguage() {
-        Locale locale = new Locale("en_US");
-        Locale.setDefault(locale);
-        Configuration config = new Configuration();
-        config.locale = locale;
-        getApplicationContext().getResources().updateConfiguration(config, null);
-    }
-
     @Override
     public void onClick(View v) {
         switch (v.getId()){
