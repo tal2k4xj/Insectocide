@@ -121,7 +121,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                         initAccelerometer();
                         initMoveInsectsThread();
                         initMoveShotsThread();
-                        //startInsectsShotsThread();
+                        startInsectsShotsThread();
                     }
                 }).start();
             }
