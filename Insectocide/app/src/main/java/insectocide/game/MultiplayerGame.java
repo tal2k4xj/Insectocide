@@ -78,6 +78,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private ClientSocketThread clientThread;
     private String lastMovement = "";
     private String curInputMessage = "";
+    private boolean isServerClosed = false;
 
 
     @Override
@@ -360,7 +361,8 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private void endGame() {
         unRegisterAccelerometer();
         isConnectedToOpponent = false;
-        if(!curInputMessage.equals("enemyDie")) 
+        isServerClosed = true;
+        if(!curInputMessage.equals("enemyDie"))
             sendWifiMessage("connectionClosed");
         runOnUiThread(new Runnable() {
             @Override
@@ -602,7 +604,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         public void run() {
             try {
                 server = new ServerSocket(WiFiDirectReceiver.PORT,1);
-                while (true) {
+                while (!isServerClosed) {
                     try {
                         connection = server.accept();
                         isConnectedToOpponent = true;
