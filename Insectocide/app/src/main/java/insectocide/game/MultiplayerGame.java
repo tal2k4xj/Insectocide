@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.SynchronousQueue;
 
 import insectocide.logic.Insect;
@@ -85,7 +86,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_multiplayer_game);
-        messeageQueue = new SynchronousQueue<>();
+        messeageQueue = new LinkedTransferQueue<>();
         shipsShoots = new CopyOnWriteArrayList<>();
         insectsShoots = new CopyOnWriteArrayList<>();
         shipLives = new CopyOnWriteArrayList<>();
@@ -672,8 +673,8 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
 
     public void playByInput(){
         do{
-           curInputMessage = messeageQueue.peek();
-            if (!curInputMessage.equals("")) {
+           curInputMessage = messeageQueue.poll();
+            if (curInputMessage.equals(null) && !curInputMessage.equals("") ) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
