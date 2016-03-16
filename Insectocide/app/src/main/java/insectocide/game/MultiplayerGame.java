@@ -358,7 +358,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     @Override
     protected void onStop() {
         super.onStop();
-        endGame();
     }
 
     private void endGame() {
@@ -674,7 +673,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     public void playByInput(){
         do{
            curInputMessage = messeageQueue.poll();
-            if (curInputMessage.equals(null) && !curInputMessage.equals("") ) {
+            if (curInputMessage != null && !curInputMessage.equals("") ) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
