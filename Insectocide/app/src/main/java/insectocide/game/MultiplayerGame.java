@@ -77,6 +77,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private ServerSocketThread serverThread;
     private ClientSocketThread clientThread;
     private String lastMovement = "";
+    private String curInputMessage = "";
 
 
     @Override
@@ -360,7 +361,9 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private void endGame() {
         unRegisterAccelerometer();
         isConnectedToOpponent = false;
-        sendWifiMessage("END");
+        if(equals("END")) {
+            sendWifiMessage("END");
+        }
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -664,34 +667,35 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     }
 
     public void checkInputWhilePlay() throws IOException{
-        String message = "";
+
         do{
-            message = input.readUTF();
-            final String inputStr = message;
-            if (!message.equals("")) {
+           curInputMessage = input.readUTF();
+            if (!curInputMessage.equals("")) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (inputStr.equals("clientDone")){
+                        if (curInputMessage.equals("clientDone")){
                             isStartClientAnimationDone = true;
-                        } else if (inputStr.equals("enemy is dead")) {
+                        } else if (curInputMessage.equals("enemy is dead")) {
                             winGame();
-                        } else if (inputStr.equals("shipFire")) {
+                        } else if (curInputMessage.equals("shipFire")) {
                             Shot s = opponentShip.fire();
                             shipsShoots.add(s);
                             s.bringToFront();
                             rl.addView(s);
                             shootSound.start();
-                        } else if (inputStr.startsWith("insect")) {
-                            int insectNum = (Integer.parseInt(inputStr.substring(7,10))-100);
+                        } else if (curInputMessage.startsWith("insect")) {
+                            int insectNum = (Integer.parseInt(curInputMessage.substring(7,10))-100);
                             insectShoot(insectNum);
-                        } else if (!inputStr.equals("END")){
-                            opponentShip.move(inputStr);
+                        } else if (!curInputMessage.equals("END")){
+                            opponentShip.move(curInputMessage);
+                        }else{
+                            winGame();
                         }
                     }
                 });
             }
-        }while(!message.equals("END") && isConnectedToOpponent);
+        }while(!curInputMessage.equals("END") && isConnectedToOpponent);
     }
 
     private synchronized void insectShoot(int insectNum) {
