@@ -361,7 +361,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private void endGame() {
         unRegisterAccelerometer();
         isConnectedToOpponent = false;
-        if(equals("END")) {
+        if(!curInputMessage.equals("END")) {
             sendWifiMessage("END");
         }
         runOnUiThread(new Runnable() {
