@@ -2,6 +2,7 @@ package insectocide.game;
 
 import android.app.Activity;
 import android.content.Context;
+import android.net.wifi.WifiManager;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -42,6 +43,9 @@ public class MultiplayerMenu extends Activity implements View.OnClickListener,Wi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_multiplayer_menu);
 
+        wfManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+        wfChannel = wfManager.initialize(this, getMainLooper(), this);
+
         buttonHandler = new Handler();
 
         enableWifi = (ImageButton)findViewById(R.id.EnableWifiButton);
@@ -65,12 +69,9 @@ public class MultiplayerMenu extends Activity implements View.OnClickListener,Wi
     @Override
     protected void onStart() {
         super.onStart();
-        if(isWfdReceiverRegisteredAndFeatureEnabled()) {
-            unRegisterWfdReceiver();
-            wfManager = null;
-        }
-        wfManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
-        wfChannel = wfManager.initialize(this, getMainLooper(), this);
+        WifiManager wfm = (WifiManager)getSystemService(Context.WIFI_SERVICE);
+        wfm.setWifiEnabled(false);
+        wfm.setWifiEnabled(true);
     }
 
     @Override
