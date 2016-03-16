@@ -361,8 +361,11 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private void endGame() {
         unRegisterAccelerometer();
         isConnectedToOpponent = false;
-        if(!curInputMessage.equals("END")) {
-            sendWifiMessage("END");
+        if(!curInputMessage.equals("enemyDie")) {
+            sendWifiMessage("connectionClosed");
+            Toast.makeText(this, "Connection Interrupted", Toast.LENGTH_SHORT);
+        }else if (curInputMessage.equals("connectionClosed")){
+            Toast.makeText(this,"Connection Interrupted",Toast.LENGTH_SHORT);
         }
         runOnUiThread(new Runnable() {
             @Override
@@ -466,6 +469,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     }
 
     private void loseGame() {
+        sendWifiMessage("enemyDie");
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -676,8 +680,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                     public void run() {
                         if (curInputMessage.equals("clientDone")){
                             isStartClientAnimationDone = true;
-                        } else if (curInputMessage.equals("enemy is dead")) {
-                            winGame();
                         } else if (curInputMessage.equals("shipFire")) {
                             Shot s = opponentShip.fire();
                             shipsShoots.add(s);
@@ -687,15 +689,15 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                         } else if (curInputMessage.startsWith("insect")) {
                             int insectNum = (Integer.parseInt(curInputMessage.substring(7,10))-100);
                             insectShoot(insectNum);
-                        } else if (!curInputMessage.equals("END")){
-                            opponentShip.move(curInputMessage);
-                        }else{
+                        } else if (curInputMessage.equals("enemyDie")){
                             winGame();
+                        }else if (!curInputMessage.equals("connectionClosed")){
+                            opponentShip.move(curInputMessage);
                         }
                     }
                 });
             }
-        }while(!curInputMessage.equals("END") && isConnectedToOpponent);
+        }while((!curInputMessage.equals("connectionClosed") || !curInputMessage.equals("enemyDie") ) && isConnectedToOpponent);
     }
 
     private synchronized void insectShoot(int insectNum) {
