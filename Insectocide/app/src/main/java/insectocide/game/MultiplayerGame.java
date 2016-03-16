@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Vibrator;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -215,6 +216,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                     try {
                         Random rand = new Random();
                         int i = rand.nextInt(liveInsects.size());
+                        i = (liveInsects.size() - 1) - i;
                         final String shotMessage="insect "+ (i+100) + " shoot";
                         sendWifiMessage(shotMessage);
                         insectShoot(i);
@@ -390,9 +392,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
             opponentShip.gotHit(s.getPower());
             if(s.getEntity() instanceof Insect) {
                 opponentShip.reducePowers();
-            }
-            if(opponentShip.isDead()){
-                winGame();
             }
             removeShot(s);
         }
@@ -609,7 +608,8 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                         output.flush();
                         input = new ObjectInputStream(connection.getInputStream());
                         checkInputWhilePlay();
-                    } catch (EOFException eofException) {
+                    } catch (EOFException e) {
+                        e.printStackTrace();
                         endGame();
                     }
                     finally {
@@ -623,8 +623,8 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                         }
                     }
                 }
-            } catch (IOException ioException){
-                ioException.printStackTrace();
+            } catch (IOException e){
+                e.printStackTrace();
                 endGame();
             }
         }
@@ -640,10 +640,11 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                 output.flush();
                 input = new ObjectInputStream(connection.getInputStream());
                 checkInputWhilePlay();
-            } catch (EOFException eofException) {
+            } catch (EOFException e) {
+                e.printStackTrace();
                 endGame();
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
                 endGame();
             } finally {
                 try {
@@ -682,7 +683,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                             rl.addView(s);
                             shootSound.start();
                         } else if (inputStr.startsWith("insect")) {
-                            int insectNum = liveInsects.size()-1 - Integer.parseInt(inputStr.substring(7,10))-100;
+                            int insectNum = (Integer.parseInt(inputStr.substring(7,10))-100);
                             insectShoot(insectNum);
                         } else if (!inputStr.equals("END")){
                             opponentShip.move(inputStr);
@@ -715,8 +716,8 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                 output.flush();
             }
         }
-        catch (IOException ioException){
-            ioException.printStackTrace();
+        catch (IOException e){
+            e.printStackTrace();
             endGame();
         }
     }
