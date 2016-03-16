@@ -10,17 +10,14 @@ import android.media.MediaPlayer;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Vibrator;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -29,8 +26,11 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
+import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.SynchronousQueue;
+
 import insectocide.logic.Insect;
 import insectocide.logic.InsectsProvider;
 import insectocide.logic.Shot;
@@ -78,12 +78,14 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private ClientSocketThread clientThread;
     private String lastMovement = "";
     private String curInputMessage = "";
+    private Queue<String> messeageQueue;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_multiplayer_game);
+        messeageQueue = new SynchronousQueue<>();
         shipsShoots = new CopyOnWriteArrayList<>();
         insectsShoots = new CopyOnWriteArrayList<>();
         shipLives = new CopyOnWriteArrayList<>();
@@ -610,7 +612,8 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                         output = new ObjectOutputStream(connection.getOutputStream());
                         output.flush();
                         input = new ObjectInputStream(connection.getInputStream());
-                        checkInputWhilePlay();
+                        messeageQueue.add(input.readUTF());
+                        playByInput();
                     } catch (EOFException e) {
                         e.printStackTrace();
                         endGame();
@@ -642,7 +645,8 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                 output = new ObjectOutputStream(connection.getOutputStream());
                 output.flush();
                 input = new ObjectInputStream(connection.getInputStream());
-                checkInputWhilePlay();
+                messeageQueue.add(input.readUTF());
+                playByInput();
             } catch (EOFException e) {
                 e.printStackTrace();
                 endGame();
@@ -666,10 +670,9 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         }
     }
 
-    public void checkInputWhilePlay() throws IOException{
-
+    public void playByInput(){
         do{
-           curInputMessage = input.readUTF();
+           curInputMessage = messeageQueue.peek();
             if (!curInputMessage.equals("")) {
                 runOnUiThread(new Runnable() {
                     @Override
