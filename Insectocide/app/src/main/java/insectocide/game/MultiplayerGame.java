@@ -671,34 +671,37 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     }
 
     public void playByInput(){
-        do{
-           curInputMessage = messeageQueue.poll();
-            if (curInputMessage != null && !curInputMessage.equals("") ) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (curInputMessage.equals("clientDone")){
-                            isStartClientAnimationDone = true;
-                        } else if (curInputMessage.equals("enemy is dead")) {
-                            winGame();
-                        } else if (curInputMessage.equals("shipFire")) {
-                            Shot s = opponentShip.fire();
-                            shipsShoots.add(s);
-                            s.bringToFront();
-                            rl.addView(s);
-                            shootSound.start();
-                        } else if (curInputMessage.startsWith("insect")) {
-                            int insectNum = (Integer.parseInt(curInputMessage.substring(7,10))-100);
-                            insectShoot(insectNum);
-                        } else if (!curInputMessage.equals("END")){
-                            opponentShip.move(curInputMessage);
-                        }else{
-                            winGame();
+        curInputMessage = messeageQueue.poll();
+        if (curInputMessage!= null) {
+            do {
+                curInputMessage = messeageQueue.poll();
+                if (!curInputMessage.equals("")) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (curInputMessage.equals("clientDone")) {
+                                isStartClientAnimationDone = true;
+                            } else if (curInputMessage.equals("enemy is dead")) {
+                                winGame();
+                            } else if (curInputMessage.equals("shipFire")) {
+                                Shot s = opponentShip.fire();
+                                shipsShoots.add(s);
+                                s.bringToFront();
+                                rl.addView(s);
+                                shootSound.start();
+                            } else if (curInputMessage.startsWith("insect")) {
+                                int insectNum = (Integer.parseInt(curInputMessage.substring(7, 10)) - 100);
+                                insectShoot(insectNum);
+                            } else if (!curInputMessage.equals("END")) {
+                                opponentShip.move(curInputMessage);
+                            } else {
+                                winGame();
+                            }
                         }
-                    }
-                });
-            }
-        }while(!curInputMessage.equals("END") && isConnectedToOpponent);
+                    });
+                }
+            } while (isConnectedToOpponent && (!curInputMessage.equals("END")));
+        }
     }
 
     private synchronized void insectShoot(int insectNum) {
