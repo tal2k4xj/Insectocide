@@ -82,7 +82,25 @@ public class SpaceShip extends SpaceEntity {
             }
         lastMovement=direction;
     }
-
+    public void multiplayerInputShipMove(int inputMove){
+        switch (inputMove) {
+            case 12:
+                this.move("left2");
+                break;
+            case 13:
+                this.move("left3");
+                break;
+            case 22:
+                this.move("right2");
+                break;
+            case 23:
+                this.move("right3");
+                break;
+            case 30:
+                this.move("middle");
+                break;
+        }
+    }
     private void setDefaults() {
         health=3;
         movementSpeed=2;
