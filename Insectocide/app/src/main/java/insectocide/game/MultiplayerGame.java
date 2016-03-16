@@ -355,7 +355,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     @Override
     protected void onStop() {
         super.onStop();
-        endGame();
     }
 
     private void endGame() {
