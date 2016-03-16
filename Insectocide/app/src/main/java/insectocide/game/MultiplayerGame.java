@@ -359,12 +359,16 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         unRegisterAccelerometer();
         isConnectedToOpponent = false;
         sendWifiMessage("END");
-        Looper.prepare();
-        new Handler().postDelayed(new Runnable() {
+        runOnUiThread(new Runnable() {
+            @Override
             public void run() {
-                finish();
+                new Handler().postDelayed(new Runnable() {
+                    public void run() {
+                        finish();
+                    }
+                }, 2000);
             }
-        }, 2000);
+        });
     }
 
     private void checkIfShipHit(Shot s){
