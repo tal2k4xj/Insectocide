@@ -3,6 +3,7 @@ package insectocide.game;
 import android.app.Activity;
 import android.content.Context;
 import android.net.wifi.WifiManager;
+import android.net.wifi.WifiManager.WifiLock;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -73,6 +74,8 @@ public class MultiplayerMenu extends Activity implements View.OnClickListener,Wi
         WifiManager wfm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         wfm.setWifiEnabled(false);
         wfm.setWifiEnabled(true);
+        WifiLock lock = wfm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "LockTag");
+        lock.acquire();
     }
 
     @Override
