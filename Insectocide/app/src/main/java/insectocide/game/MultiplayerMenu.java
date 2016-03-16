@@ -69,7 +69,8 @@ public class MultiplayerMenu extends Activity implements View.OnClickListener,Wi
     @Override
     protected void onStart() {
         super.onStart();
-        WifiManager wfm = (WifiManager)getSystemService(Context.WIFI_SERVICE);
+        unRegisterWfdReceiver();
+        WifiManager wfm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         wfm.setWifiEnabled(false);
         wfm.setWifiEnabled(true);
     }

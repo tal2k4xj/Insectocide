@@ -91,15 +91,15 @@ public class Shot extends ImageView {
     public void shoot(){
         if (entity instanceof SpaceShip){
             if(entity.getColor().equals("red")){
-                setY(getY() - (float)(speed * 10));
+                setY(getY() - (float)(speed * metrics.heightPixels*0.025));
             }else if(entity.getColor().equals("blue")){
-                setY(getY() + (float)(speed * 10));
+                setY(getY() + (float)(speed * metrics.heightPixels*0.025));
             }
         }else if (entity instanceof Insect){
             if(((Insect) entity).getShootDirection().equals("up")){
-                setY(getY() - (float)(speed * 7));
+                setY(getY() - (float)(speed * metrics.heightPixels*0.0175));
             }else if (((Insect) entity).getShootDirection().equals("down")){
-                setY(getY() + (float)(speed * 7));
+                setY(getY() + (float)(speed * metrics.heightPixels*0.0175));
             }
         }
     }
