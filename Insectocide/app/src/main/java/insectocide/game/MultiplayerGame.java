@@ -682,7 +682,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                             rl.addView(s);
                             shootSound.start();
                         } else if (inputStr.startsWith("insect")) {
-                            int insectNum = Integer.parseInt(inputStr.substring(7,10))-100;
+                            int insectNum = liveInsects.size()-1 - Integer.parseInt(inputStr.substring(7,10))-100;
                             insectShoot(insectNum);
                         } else if (!inputStr.equals("END")){
                             opponentShip.move(inputStr);
