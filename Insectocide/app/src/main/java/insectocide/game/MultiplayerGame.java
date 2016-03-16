@@ -360,12 +360,8 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private void endGame() {
         unRegisterAccelerometer();
         isConnectedToOpponent = false;
-        if(!curInputMessage.equals("enemyDie")) {
+        if(!curInputMessage.equals("enemyDie")) 
             sendWifiMessage("connectionClosed");
-            Toast.makeText(this, "Connection Interrupted", Toast.LENGTH_SHORT);
-        }else if (curInputMessage.equals("connectionClosed")){
-            Toast.makeText(this,"Connection Interrupted",Toast.LENGTH_SHORT);
-        }
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
