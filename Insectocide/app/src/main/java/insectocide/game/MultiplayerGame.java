@@ -123,7 +123,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                             isStartClientAnimationDone = true;
                         }
                         initAccelerometer();
-                        initMoveEnemyShipThread();
                         initMoveInsectsThread();
                         initMoveShotsThread();
                         startInsectsShotsThread();
@@ -548,6 +547,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
             String movementToSend = convertMovementToOppositeMovement(shipMovement);
             sendWifiMessage(movementToSend);
         }
+        opponentShip.move(lastEnemyShipMovement);
     }
 
     private String moveShip(float curMovement) {
@@ -561,7 +561,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                 return("right2");
             }
         }else if(curMovement<-1){
-            lastMovement = "left";
             if(curMovement<-2){
                 playerShip.move("left3");
                 return("left3");
@@ -719,27 +718,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         }while((!curInputMessage.equals("connectionClosed") || !curInputMessage.equals("enemyDie") ) && isConnectedToOpponent);
     }
 
-    private void initMoveEnemyShipThread() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (isConnectedToOpponent && !liveInsects.isEmpty()) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            opponentShip.move(lastEnemyShipMovement);
-                        }
-                    });
-                    try {
-                        Thread.sleep(20);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }).start();
-    }
-
     private synchronized void insectShoot(int insectNum) {
         if (liveInsects.size() > insectNum) {
             final Insect insect = liveInsects.get(insectNum);
@@ -756,6 +734,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     }
 
     public synchronized void sendWifiMessage(String message){
+        System.out.println(message);
         try{
             if(isConnectedToOpponent) {
                 output.writeUTF(message);
