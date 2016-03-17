@@ -217,17 +217,20 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                 while (wifiP2pInfo.isGroupOwner && isConnectedToOpponent && !liveInsects.isEmpty()) {
                     try {
                         Random rand = new Random();
-                        int i = rand.nextInt(liveInsects.size());
-                        i = (liveInsects.size() - 1) - i;
-                        final String shotMessage="insect "+ (i+100) + " shoot";
+                        int insectNumber = rand.nextInt(liveInsects.size());
+                        final String shotMessage="insect "+ getOutputInsectNumber(insectNumber) + " shoot";
                         sendWifiMessage(shotMessage);
-                        insectShoot(i);
+                        insectShoot(insectNumber);
                         int timeToSleep = calculateInsectShootingTime();
                         Thread.sleep(timeToSleep);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
+            }
+
+            private int getOutputInsectNumber(int insectNumber) {
+                return liveInsects.size() - 1 - insectNumber +100;
             }
 
             private int calculateInsectShootingTime() {
