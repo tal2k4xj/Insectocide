@@ -171,7 +171,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private void initAccelerometer() {
         sm=(SensorManager)getSystemService(SENSOR_SERVICE);
         accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sm.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
+        sm.registerListener(this, accelerometer,SensorManager.SENSOR_DELAY_GAME);
     }
 
     private void unRegisterAccelerometer(){
