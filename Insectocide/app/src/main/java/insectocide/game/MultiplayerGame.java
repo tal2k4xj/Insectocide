@@ -720,17 +720,24 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     }
 
     private void initMoveEnemyShipThread() {
-        new Handler().postDelayed(new Runnable() {
+        new Thread(new Runnable() {
+            @Override
             public void run() {
-                isStartAnimationDone = true;
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        opponentShip.move(lastEnemyShipMovement);
+                while (isConnectedToOpponent && !liveInsects.isEmpty()) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            opponentShip.move(lastEnemyShipMovement);
+                        }
+                    });
+                    try {
+                        Thread.sleep(20);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                });
+                }
             }
-        }, 20);
+        }).start();
     }
 
     private synchronized void insectShoot(int insectNum) {
