@@ -10,17 +10,14 @@ import android.media.MediaPlayer;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Vibrator;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -77,6 +74,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private ServerSocketThread serverThread;
     private ClientSocketThread clientThread;
     private String lastMovement = "";
+    private String lastEnemyShipMovement = "middle";
     private String curInputMessage = "";
     private boolean isServerClosed = false;
 
@@ -125,6 +123,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                             isStartClientAnimationDone = true;
                         }
                         initAccelerometer();
+                        initMoveEnemyShipThread();
                         initMoveInsectsThread();
                         initMoveShotsThread();
                         startInsectsShotsThread();
@@ -543,36 +542,55 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     @Override
     public void onSensorChanged(SensorEvent event) {
         float curMovement = event.values[1];
-        moveShip(curMovement);
+        String shipMovement = moveShip(curMovement);
+        if(shipMovement != lastMovement){
+            lastMovement = shipMovement;
+            String movementToSend = convertMovementToOppositeMovement(shipMovement);
+            sendWifiMessage(movementToSend);
+        }
     }
 
-    private void moveShip(float curMovement) {
+    private String moveShip(float curMovement) {
 
         if (curMovement >1) {
-            lastMovement = "right";
             if(curMovement>2){
                 playerShip.move("right3");
-                sendWifiMessage("left3");
+                return("right3");
             }else {
                 playerShip.move("right2");
-                sendWifiMessage("left2");
+                return("right2");
             }
         }else if(curMovement<-1){
             lastMovement = "left";
             if(curMovement<-2){
                 playerShip.move("left3");
-                sendWifiMessage("right3");
+                return("left3");
             }else {
                 playerShip.move("left2");
-                sendWifiMessage("right2");
+                return("left2");
             }
         }else{
-            if(!lastMovement.equals("middle")) {
-                playerShip.move("middle");
-                sendWifiMessage("middle");
-            }
-            lastMovement = "middle";
+            playerShip.move("middle");
+            return("middle");
         }
+    }
+    public String convertMovementToOppositeMovement(String movement){
+        String oppositeMovement = movement;
+        switch(movement){
+            case("right2"):
+                oppositeMovement = "left2";
+                break;
+            case("right3"):
+                oppositeMovement = "left3";
+                break;
+            case("left2"):
+                oppositeMovement = "right2";
+                break;
+            case("left3"):
+                oppositeMovement = "right3";
+                break;
+        }
+        return oppositeMovement;
     }
 
     @Override
@@ -692,12 +710,27 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                         } else if (curInputMessage.equals("enemyDie")){
                             winGame();
                         }else if (!curInputMessage.equals("connectionClosed")){
-                            opponentShip.move(curInputMessage);
+                            if (curInputMessage !=lastEnemyShipMovement)
+                                lastEnemyShipMovement = curInputMessage;
                         }
                     }
                 });
             }
         }while((!curInputMessage.equals("connectionClosed") || !curInputMessage.equals("enemyDie") ) && isConnectedToOpponent);
+    }
+
+    private void initMoveEnemyShipThread() {
+        new Handler().postDelayed(new Runnable() {
+            public void run() {
+                isStartAnimationDone = true;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        opponentShip.move(lastEnemyShipMovement);
+                    }
+                });
+            }
+        }, 20);
     }
 
     private synchronized void insectShoot(int insectNum) {
