@@ -618,7 +618,11 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
                     Player p = new Player(playerName, calcScore());
                     saveScoreBoard(p);
                 }
-                finish();
+                new Handler().postDelayed(new Runnable() {
+                    public void run() {
+                        System.exit(0);
+                    }
+                }, 1000);
             }
         });
         if (!this.isFinishing())
@@ -628,7 +632,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
-            finish();
+            System.exit(0);
             return true;
         }
         return super.onKeyDown(keyCode, event);

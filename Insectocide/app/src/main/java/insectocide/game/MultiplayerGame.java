@@ -369,7 +369,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
             public void run() {
                 new Handler().postDelayed(new Runnable() {
                     public void run() {
-                        finish();
+                        System.exit(0);
                     }
                 }, 2000);
             }
