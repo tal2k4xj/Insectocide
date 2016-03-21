@@ -37,22 +37,21 @@ import insectocide.logic.WiFiDirectReceiver;
 public class MultiplayerGame extends Activity implements SensorEventListener{
     private final String DEFAULT_PLAYER_SHIP_COLOR = "red";
     private final String DEFAULT_OPPONENT_COLOR = "blue";
-    private final int SOCKET_TIMEOUT = 5000;
     private final int INSECTS_ROWS = 4;
     private final int INSECTS_COLS = 10;
     private final long SHOOT_DELAY = 800;
     private final long START_ANIMATION_DELAY = 7200;
     private WifiP2pInfo wifiP2pInfo;
     private MediaPlayer shipStartSound;
-    private MediaPlayer shootSound;
-    private MediaPlayer shipExplode;
-    private MediaPlayer bugDie;
+    private MediaPlayer shipShootSound;
+    private MediaPlayer shipExplodeSound;
+    private MediaPlayer bugDieSound;
+    private MediaPlayer insectsSound;
     private Sensor accelerometer;
     private SensorManager sm;
     private SpaceShip playerSpaceShip;
     private SpaceShip opponentSpaceShip;
     private DisplayMetrics metrics;
-    private Insect insects[][];
     private List<Shot> shipsShoots;
     private List<Shot> insectsShoots;
     private List<Insect> liveInsects;
@@ -101,10 +100,12 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         rl = (RelativeLayout)findViewById(R.id.MultiplayerLayout);
         vibrate = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        shootSound = MediaPlayer.create(this, R.raw.shoot);
+        shipShootSound = MediaPlayer.create(this, R.raw.shoot);
         shipStartSound = MediaPlayer.create(this, R.raw.shipstart);
-        shipExplode = MediaPlayer.create(this, R.raw.shipexplode);
-        bugDie = MediaPlayer.create(this, R.raw.bugdie);
+        shipExplodeSound = MediaPlayer.create(this, R.raw.shipexplode);
+        insectsSound = MediaPlayer.create(this, R.raw.insects_start);
+        insectsSound.setLooping(true);
+        bugDieSound = MediaPlayer.create(this, R.raw.bugdie);
         Bundle extras = getIntent().getExtras();
         wifiP2pInfo = (WifiP2pInfo)extras.get("WIFI_P2P_INFO");
     }
@@ -165,7 +166,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private void initInsects(){
         InsectsProvider insectsProvider = new InsectsProvider(INSECTS_ROWS, INSECTS_COLS, "multi", this, metrics);
         liveInsects = insectsProvider.getLiveInsectsList();
-        insects = insectsProvider.getInsectMatrix();
         for (Insect insect: liveInsects) {
             rl.addView(insect);
         }
@@ -312,7 +312,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                             if (shipColor.equals(DEFAULT_PLAYER_SHIP_COLOR)) {
                                 showInsectBonus(insect);
                             }
-                            bugDie.start();
+                            bugDieSound.start();
                         }
                     });
                     if (shipColor.equals(DEFAULT_PLAYER_SHIP_COLOR)) {
@@ -321,6 +321,9 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                         opponentSpaceShip.getPowerFromInsect(insect.getType());
                     }
                     liveInsects.remove(insect);
+                    if(liveInsects.size()==0){
+                        insectsSound.stop();
+                    }
                 }
                 removeShot(shot);
             }
@@ -352,7 +355,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
             @Override
             public void run() {
                 opponentSpaceShip.die();
-                shipExplode.start();
+                shipExplodeSound.start();
                 playerSpaceShip.win();
                 endGame();
             }
@@ -477,7 +480,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
             @Override
             public void run() {
                 playerSpaceShip.die();
-                shipExplode.start();
+                shipExplodeSound.start();
                 opponentSpaceShip.win();
                 endGame();
             }
@@ -623,7 +626,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
             s.bringToFront();
             rl.addView(s);
             lastShootTime = time;
-            shootSound.start();
+            shipShootSound.start();
         }
         return false;
     }
@@ -735,7 +738,7 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         shipsShoots.add(s);
         s.bringToFront();
         rl.addView(s);
-        shootSound.start();
+        shipShootSound.start();
     }
 
     private void handleOpponentShipMovement() {

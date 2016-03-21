@@ -42,17 +42,16 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     private final int INSECTS_COLS = 10;
     private final long SHOOT_DELAY = 800;
     private final long START_ANIMATION_DELAY = 7200;
-    private MediaPlayer shipStart;
+    private MediaPlayer shipStartSound;
     private MediaPlayer shipShootSound;
-    private MediaPlayer shipExplode;
-    private MediaPlayer bugDie;
-    private MediaPlayer insectStart;
+    private MediaPlayer shipExplodeSound;
+    private MediaPlayer insectDieSound;
+    private MediaPlayer insectsSound;
     private int timeOfGame;
     private Sensor accelerometer;
     private SensorManager sm;
     private SpaceShip spaceShip;
     private DisplayMetrics metrics;
-    private Insect insects[][];
     private Handler timerHandler;
     private List<Shot> shipShoots;
     private List<Shot> insectsShoots;
@@ -76,6 +75,15 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single_player_game);
+        initParameters();
+        initShip();
+        updateLives();
+        initInsects();
+        startReadyGoAnimation();
+        initWithRestWithStartDelay();
+    }
+
+    private void initParameters() {
         shipShoots = new CopyOnWriteArrayList<>();
         insectsShoots = new CopyOnWriteArrayList<>();
         shipLives = new CopyOnWriteArrayList<>();
@@ -91,16 +99,12 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         rl = (RelativeLayout)findViewById(R.id.singlePlayerLayout);
         shipShootSound = MediaPlayer.create(this, R.raw.shoot);
         vibrate = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        shipStart = MediaPlayer.create(this, R.raw.shipstart);
-        insectStart = MediaPlayer.create(this, R.raw.insects_start);
-        shipExplode = MediaPlayer.create(this, R.raw.shipexplode);
-        bugDie = MediaPlayer.create(this, R.raw.bugdie);
-
-        initShip();
-        updateLives();
-        initInsects();
-        startReadyGoAnimation();
-        initWithRestWithStartDelay();
+        shipStartSound = MediaPlayer.create(this, R.raw.shipstart);
+        insectsSound = MediaPlayer.create(this, R.raw.insects_start);
+        insectsSound.setLooping(true);
+        shipExplodeSound = MediaPlayer.create(this, R.raw.shipexplode);
+        insectDieSound = MediaPlayer.create(this, R.raw.bugdie);
+        insectsSound.start();
     }
 
     private void initWithRestWithStartDelay() {
@@ -126,14 +130,12 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
         spaceShip = new SpaceShip(DEFAULT_COLOR, this , metrics);
         spaceShip.bringToFront();
         rl.addView(spaceShip);
-        insectStart.start();
-        shipStart.start();
+        shipStartSound.start();
     }
 
     private void initInsects(){
         InsectsProvider insectsProvider = new InsectsProvider(INSECTS_ROWS, INSECTS_COLS,"single", this, metrics);
         liveInsects = insectsProvider.getLiveInsectsList();
-        insects = insectsProvider.getInsectMatrix();
         for (Insect insect: liveInsects) {
             rl.addView(insect);
         }
@@ -279,7 +281,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
                         public void run() {
                             insect.die();
                             showInsectBonus(insect);
-                            bugDie.start();
+                            insectDieSound.start();
                         }
                     });
                     spaceShip.getPowerFromInsect(insect.getType());
@@ -319,6 +321,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             public void run() {
                 new Handler().postDelayed(new Runnable() {
                     public void run() {
+                        insectsSound.stop();
                         spaceShip.win();
                     }
                 }, 300);
@@ -457,7 +460,7 @@ public class SinglePlayerGame extends Activity implements SensorEventListener,Vi
             @Override
             public void run() {
                 spaceShip.die();
-                shipExplode.start();
+                shipExplodeSound.start();
                 endGame();
             }
         });
