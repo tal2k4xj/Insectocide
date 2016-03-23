@@ -46,7 +46,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
     private MediaPlayer shipShootSound;
     private MediaPlayer shipExplodeSound;
     private MediaPlayer bugDieSound;
-    private MediaPlayer insectsSound;
     private Sensor accelerometer;
     private SensorManager sm;
     private SpaceShip playerSpaceShip;
@@ -103,8 +102,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
         shipShootSound = MediaPlayer.create(this, R.raw.shoot);
         shipStartSound = MediaPlayer.create(this, R.raw.shipstart);
         shipExplodeSound = MediaPlayer.create(this, R.raw.shipexplode);
-        insectsSound = MediaPlayer.create(this, R.raw.insects_start);
-        insectsSound.setLooping(true);
         bugDieSound = MediaPlayer.create(this, R.raw.bugdie);
         Bundle extras = getIntent().getExtras();
         wifiP2pInfo = (WifiP2pInfo)extras.get("WIFI_P2P_INFO");
@@ -321,9 +318,6 @@ public class MultiplayerGame extends Activity implements SensorEventListener{
                         opponentSpaceShip.getPowerFromInsect(insect.getType());
                     }
                     liveInsects.remove(insect);
-                    if(liveInsects.size()==0){
-                        insectsSound.stop();
-                    }
                 }
                 removeShot(shot);
             }
