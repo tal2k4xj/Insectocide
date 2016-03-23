@@ -1,5 +1,6 @@
 package insectocide.logic;
-
+//credit to "Android 4.0 New Features - Demo Wi Fi Direct" on Youtube : https://www.youtube.com/watch?v=cgJ71IfZZw8
+//credit to Moran Barzilay from our class that also gave us some information about this technology
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
